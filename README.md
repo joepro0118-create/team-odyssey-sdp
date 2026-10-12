@@ -40,6 +40,23 @@ Use separate browser contexts/devices for independent residents; tabs in one bro
 
 ## Demo limitations — read before deploying
 
+### Vercel preview (`Emma` branch)
+
+On Vercel, the app automatically uses **browser preview mode**. Each tab has its own fictional marketplace; switch the resident selector within that tab to try posting and acceptance. Reloading resets all preview activity. It does not sync between phones or tabs. A persistent notice explains these limits. The server's memory API is disabled in this mode with a `503` response, so the preview does not pretend to have shared storage or real authentication.
+
+This mode deliberately simulates state and contact visibility in the browser, with fake data only. Keep the server API as the integration target for Member 4. Browser preview mode is not a security boundary and must never handle real resident data.
+
+To run the same preview locally in PowerShell:
+
+```powershell
+$env:NEXT_PUBLIC_DEMO_MODE = 'browser'
+npm run dev
+```
+
+Leave `NEXT_PUBLIC_DEMO_MODE` unset for the original local server demo. After setting up durable storage and real authentication, Member 4 can explicitly set the deployment mode to `server` and replace the demo adapter. Do not use the in-memory adapter for a shared Vercel deployment.
+
+### Local server demo
+
 **This is a single-process demo backend, not Supabase or production authentication.** Data lives in server memory and resets on restart. The visible selector deliberately allows anyone to become a fictional resident. Do not enter real information. The input guardrails catch common prescription terms, contact details, and payment wording; they are not a complete moderation or privacy system.
 
 Run one Node.js process for shared demo state. Do not rely on this store across Vercel/serverless functions, replicas, or multiple workers: they do not share memory. Member 4 must replace it with durable storage and genuine authentication before a live two-phone deployment can meet the project definition of done. The UI and API use only same-origin requests, so no frontend keys are needed now.

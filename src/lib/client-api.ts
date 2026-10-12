@@ -1,4 +1,10 @@
+import { isBrowserPreview } from "./demo-mode";
+
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
+  if (isBrowserPreview) {
+    const { previewApi } = await import("./browser-preview");
+    return previewApi<T>(path, options);
+  }
   const response = await fetch(path, {
     ...options,
     cache: "no-store",

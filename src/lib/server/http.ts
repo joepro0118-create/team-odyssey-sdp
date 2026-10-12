@@ -3,10 +3,18 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { MarketplaceError } from "../marketplace-service";
 import { residentIds, type ResidentId } from "../types";
+import { isBrowserPreview } from "../demo-mode";
 
 export const sessionCookie = "tolong-demo-resident";
 
+function requireServerDemo() {
+  if (isBrowserPreview) {
+    throw new MarketplaceError("This deployment is a browser-only preview. Shared data will be available after the Supabase integration.", 503);
+  }
+}
+
 export async function getResident(): Promise<ResidentId> {
+  requireServerDemo();
   const value = (await cookies()).get(sessionCookie)?.value;
   return residentIds.includes(value as ResidentId)
     ? (value as ResidentId)
@@ -21,6 +29,7 @@ export function json(value: unknown, status = 200) {
 }
 
 export async function readBody(request: Request): Promise<unknown> {
+  requireServerDemo();
   const origin = request.headers.get("origin");
   if (
     (origin && origin !== new URL(request.url).origin) ||

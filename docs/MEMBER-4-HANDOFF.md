@@ -2,6 +2,8 @@
 
 The marketplace calls same-origin JSON APIs. Keep the response contract and replace the server store/session resolution to connect Supabase. The current service is a **single-process, in-memory demo**, not a production database adapter or authentication solution.
 
+On Vercel, `next.config.mjs` defaults to browser preview mode. `src/lib/client-api.ts` dispatches to `browser-preview.ts` in that mode, and the server memory endpoints return `503`. This is only a per-tab simulation with fictional data. After implementing durable authenticated APIs, set `NEXT_PUBLIC_DEMO_MODE=server` for the deployment and remove or update the preview notices. Do not enable the existing memory adapter on Vercel.
+
 ## HTTP contract
 
 All JSON responses have `Cache-Control: no-store, private`. Public means visible to residents in the feed; currently every identity is simulated.

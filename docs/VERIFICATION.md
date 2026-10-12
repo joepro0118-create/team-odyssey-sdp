@@ -1,5 +1,13 @@
 # Verification record
 
+## Emma preview update — 2026-10-13
+
+- Nine automated domain/preview tests pass, including posting, switching fictional residents, acceptance, separate tab state, and reset behaviour.
+- The production build in browser preview mode passes compilation, TypeScript checking, and route generation.
+- Vercel preview mode is intentionally per-tab and disables the shared memory API; it is not a shared backend or an authentication system.
+- GitHub write access was retried for the requested `Emma` branch and still returned `403 Resource not accessible by integration`. The branch exists locally.
+- Hosted browser verification is pending deployment. The earlier local browser limitations below still apply.
+
 Local checks performed on 2026-10-12/13 in Windows with Node.js 24.
 
 ## Passed

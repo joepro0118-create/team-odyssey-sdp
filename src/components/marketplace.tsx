@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
+import { isBrowserPreview } from "@/lib/demo-mode";
 import {
   categories,
   type FeedResponse,
@@ -138,6 +139,7 @@ export function Marketplace() {
         </span>
         <span className="demo-tag">DEMO</span>
       </div>
+      {isBrowserPreview && <div className="preview-notice" role="note"><strong>Interactive preview · this tab only.</strong> Switch demo residents to try posting and accepting. Refreshing resets the demo. Shared listings across phones are coming with Supabase.</div>}
       <header className="site-header">
         <div className="header-inner">
           <a className="brand" href="/" aria-label="Tolong home">
@@ -353,7 +355,7 @@ export function Marketplace() {
               </div>
               <span className="live-label">
                 <i />
-                Demo feed
+                {isBrowserPreview ? "Preview feed" : "Demo feed"}
               </span>
             </div>
             <p className="feed-subtitle">
@@ -513,7 +515,7 @@ export function Marketplace() {
             A university hackathon prototype. All residents, listings, and
             places are fictional.
             <br />
-            Demo data resets when the server restarts. Tolong connects
+            {isBrowserPreview ? "This tab’s demo resets on refresh and does not sync across phones." : "Demo data resets when the server restarts."} Tolong connects
             residents; it does not employ or insure them.
           </p>
           <span className="footer-note">

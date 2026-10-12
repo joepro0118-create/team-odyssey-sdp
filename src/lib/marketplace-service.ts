@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import {
   areas,
   categories,
@@ -108,7 +107,7 @@ export function validateListing(value: unknown): ListingInput {
   };
 }
 
-/** Replace this server-side boundary with Member 4's database adapter. */
+/** Demo-only service. Real shared activity needs Member 4's server adapter. */
 export class DemoMarketplace {
   private listings: StoredListing[];
 
@@ -172,7 +171,7 @@ export class DemoMarketplace {
     const listing = validateListing(input);
     const item: StoredListing = {
       ...listing,
-      id: randomUUID(),
+      id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       status: "open",
       ownerId: resident,

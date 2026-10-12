@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+.preview-notice {
+  padding: 12px 24px;
+  background: #fff2d8;
+  border-bottom: 1px solid #e8d3a9;
+  color: #6d5631;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.preview-notice strong { margin-right: 5px; }
+
 :root {
   --paper: #fafaf6;
   --ink: #253d34;

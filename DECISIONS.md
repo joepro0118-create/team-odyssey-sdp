@@ -2,6 +2,8 @@
 
 ## Confirmed with Member 3
 
+- 2026-10-13: Create branch `Emma` and deploy a clearly labelled Vercel preview now; Member 4 connects Supabase later. The hosted preview uses per-tab simulated state that resets on reload, while the local server demo remains available.
+
 - 2026-10-12: Build Member 3's marketplace feed, templates, listing creation, and acceptance flow in the team repository.
 - 2026-10-12: Use the recommended Next.js + React + TypeScript + Tailwind stack, with a working demo backend now; Member 4 connects Supabase later.
 - 2026-10-12: Keep the demo runnable without keys. The backend uses one Node.js process and fictional resident switching, explicitly labelled as simulated.
