@@ -6,7 +6,7 @@
 - The production build in browser preview mode passes compilation, TypeScript checking, and route generation.
 - Vercel preview mode is intentionally per-tab and disables the shared memory API; it is not a shared backend or an authentication system.
 - GitHub write access was retried for the requested `Emma` branch and still returned `403 Resource not accessible by integration`. The branch exists locally.
-- Hosted browser verification is pending deployment. The earlier local browser limitations below still apply.
+- Hosted browser verification is pending deployment. Vercel project creation succeeded, but the deployment request returned a workspace-access 403 and the CLI fallback could not refresh its login under the Windows sandbox. See `DEPLOYMENT.md`. The earlier local browser limitations below still apply.
 
 Local checks performed on 2026-10-12/13 in Windows with Node.js 24.
 
