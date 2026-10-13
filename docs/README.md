@@ -4,9 +4,8 @@ Welcome to the documentation for **Tolong** (Sime Darby Property University Hack
 
 ## Directory Overview
 
-- **[TEAM_BRIEF.md](./TEAM_BRIEF.md)**: Hackathon internal brief, goals, team roles, timeline, judging criteria, and pilot plan.
-- **[DECISIONS.md](./DECISIONS.md)**: Log of technical, architectural, and product decisions made by the team.
-- **[AGENTS.md](../AGENTS.md)**: AI agent instructions, rules, constraints, and project context (kept at root for agent auto-detection).
+- **[DECISIONS.md](file:///c:/Users/Joe/OneDrive/Desktop/team-odyssey-sdp/team-odyssey-sdp/docs/DECISIONS.md)**: Log of technical, architectural, and product decisions made by the team.
+- **[AGENTS.md](file:///c:/Users/Joe/OneDrive/Desktop/team-odyssey-sdp/team-odyssey-sdp/AGENTS.md)**: AI agent instructions, rules, constraints, and project context (kept at root for agent auto-detection).
 
 ## Additional Documents (To be added as the project evolves)
 - **Architecture & Data Models**: Schemas, API specs, and entity diagrams.
