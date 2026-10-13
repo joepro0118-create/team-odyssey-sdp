@@ -5,8 +5,8 @@
 - Nine automated domain/preview tests pass, including posting, switching fictional residents, acceptance, separate tab state, and reset behaviour.
 - The production build in browser preview mode passes compilation, TypeScript checking, and route generation.
 - Vercel preview mode is intentionally per-tab and disables the shared memory API; it is not a shared backend or an authentication system.
-- GitHub write access was retried for the requested `Emma` branch and still returned `403 Resource not accessible by integration`. The branch exists locally.
-- Hosted browser verification is pending deployment. Vercel project creation succeeded, but the deployment request returned a workspace-access 403 and the CLI fallback could not refresh its login under the Windows sandbox. See `DEPLOYMENT.md`. The earlier local browser limitations below still apply.
+- GitHub's `Emma` branch exists remotely and matched the local deployment-source commit at the time of deployment.
+- Vercel built the project and marked the Preview deployment Ready. An authenticated request returned HTTP 200 for `/`, including the preview notice, and HTTP 503 for the intentionally disabled server-memory listing API. See `DEPLOYMENT.md`.
 
 Local checks performed on 2026-10-12/13 in Windows with Node.js 24.
 
@@ -21,8 +21,8 @@ Local checks performed on 2026-10-12/13 in Windows with Node.js 24.
 
 - Three browser scenarios are implemented, but the local Microsoft Edge process closed during launch before the page could be exercised. The browser logs reported Windows sandbox access errors. The Chromium fallback download also hit an `EPERM` filesystem error. These are **not passing browser tests**.
 - Visual screenshots and physical-phone testing have not been completed. The in-app browser could not reach the sandbox's local server.
-- No live deployment or two-phone live-link check has been performed. The current memory store is unsuitable for multiple serverless instances.
-- GitHub Actions has not run because the GitHub connection rejected repository writes with `403 Resource not accessible by integration`.
+- The live preview has not been exercised interactively in a browser or on a physical phone. It intentionally keeps state in one browser tab; a two-phone shared-data check requires Member 4's Supabase integration.
+- GitHub Actions results have not been independently verified.
 
 Run `npm test`, `npm run build`, `npx playwright install chromium`, `npm run test:e2e`, and `npm run typecheck` from a normal development terminal. Browser tests start the production server and cover posting/accepting across residents, private contacts, mobile width and filters, keyboard dismissal, and feed error recovery.
 

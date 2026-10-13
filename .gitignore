@@ -7,4 +7,4 @@ out/
 playwright-report/
 test-results/
 *.log
-.vercel/
+.vercel
