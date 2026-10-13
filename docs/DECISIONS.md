@@ -1,6 +1,6 @@
 # Architecture & Project Decisions (DECISIONS.md)
 
-Record decisions agreed upon by the team here (one line per decision with date), as specified in [AGENTS.md](file:///c:/Users/Joe/OneDrive/Desktop/team-odyssey-SDP/team-odyssey-sdp/AGENTS.md).
+Record decisions agreed upon by the team here (one line per decision with date), as specified in [AGENTS.md](../AGENTS.md).
 
 ---
 
