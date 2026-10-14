@@ -33,7 +33,8 @@ on conflict (id) do update set
   is_demo = excluded.is_demo;
 
 insert into public.listings (
-  id, creator_id, listing_type, category, title, description, points_reward, status
+  id, creator_id, listing_type, category, title, description,
+  area_label, timing, points_reward, status
 )
 select
   '20000000-0000-4000-8000-000000000001',
@@ -42,6 +43,8 @@ select
   'Groceries',
   'Help collect a few groceries',
   'Demo request for collecting a small grocery order from a nearby shop.',
+  'Community hub',
+  'Today after 5 pm',
   50,
   'open'
 from auth.users u
@@ -49,7 +52,8 @@ where u.email = 'requester@tolong-demo.test'
 on conflict (id) do nothing;
 
 insert into public.listings (
-  id, creator_id, listing_type, category, title, description, points_reward, status
+  id, creator_id, listing_type, category, title, description,
+  area_label, timing, points_reward, status
 )
 select
   '20000000-0000-4000-8000-000000000002',
@@ -58,6 +62,8 @@ select
   'Household',
   'Foldable ladder available to borrow',
   'Demo listing for a foldable household ladder available for a short loan.',
+  'Garden precinct',
+  'This weekend',
   50,
   'open'
 from auth.users u

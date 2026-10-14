@@ -15,6 +15,7 @@ dist/
 build/
 out/
 .next/
+.vercel/
 .cache/
 .vite/
 
@@ -42,10 +43,13 @@ desktop.ini
 *.njsproj
 *.sln
 *.sw?
+*.tsbuildinfo
 
 # Testing & Coverage
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
 
 # Temporary & Scratch files
 tmp/
