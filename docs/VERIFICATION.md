@@ -8,6 +8,7 @@
 - The mobile/desktop login browser scenario could not run: Microsoft Edge closed during launch, with Windows temporary-profile/pipe errors. No login screenshots or interactive browser checks are claimed.
 - Real Google consent, email authentication, session refresh, and sign-out require the Supabase configuration deferred to Member 4. These flows have not been verified against a live provider. See `AUTH-SETUP.md`.
 - Signing in does not connect the marketplace data backend or verify residency. The fictional demo identities and listings remain separate from Supabase accounts.
+- The login update could not be pushed or deployed from this environment, so no hosted login checks were performed. The existing live preview still serves the earlier marketplace version. See `DEPLOYMENT.md`.
 
 ## Emma preview update — 2026-10-13
 

@@ -48,7 +48,7 @@ Use separate browser contexts/devices for independent residents; tabs in one bro
 
 ### Vercel preview (`Emma` branch)
 
-The live, Vercel-protected Preview deployment is at https://tolong-emma-preview-9f874dn48-mantouops-projects.vercel.app. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for access and redeployment details.
+The existing, Vercel-protected marketplace Preview deployment is at https://tolong-emma-preview-9f874dn48-mantouops-projects.vercel.app. The login update is committed locally and awaits push/deployment because of the current environment's credential-access failures. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for access and redeployment details.
 
 On Vercel, the app automatically uses **browser preview mode**. Each tab has its own fictional marketplace; switch the resident selector within that tab to try posting and acceptance. Reloading resets all preview activity. It does not sync between phones or tabs. A persistent notice explains these limits. The server's memory API is disabled in this mode with a `503` response, so the preview does not pretend to have shared storage or real authentication.
 
