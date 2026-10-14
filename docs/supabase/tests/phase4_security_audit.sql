@@ -4,8 +4,47 @@
 select 'browser_cannot_insert_points' as check_name,
        (not has_table_privilege('authenticated', 'public.point_transactions', 'INSERT'))::text as passed
 union all
+select 'authenticated_can_read_listings_through_rls',
+       has_table_privilege('authenticated', 'public.listings', 'SELECT')::text
+union all
+select 'authenticated_can_read_profiles_through_rls',
+       has_table_privilege('authenticated', 'public.profiles', 'SELECT')::text
+union all
 select 'browser_cannot_update_points',
        (not has_table_privilege('authenticated', 'public.point_transactions', 'UPDATE'))::text
+union all
+select 'browser_cannot_insert_listings_directly',
+       (not has_table_privilege('authenticated', 'public.listings', 'INSERT'))::text
+union all
+select 'browser_cannot_update_listings_directly',
+       (not has_table_privilege('authenticated', 'public.listings', 'UPDATE'))::text
+union all
+select 'trusted_listing_creation',
+       has_function_privilege(
+         'authenticated',
+         'public.create_listing(text,text,text,text,text,text)',
+         'EXECUTE'
+       )::text
+union all
+select 'qr_generation_uses_qualified_pgcrypto',
+       (
+         position(
+           'extensions.gen_random_bytes'
+           in pg_get_functiondef('public.create_confirmation(uuid)'::regprocedure)
+         ) > 0
+         and position(
+           'extensions.digest'
+           in pg_get_functiondef('public.create_confirmation(uuid)'::regprocedure)
+         ) > 0
+       )::text
+union all
+select 'qr_confirmation_uses_qualified_pgcrypto',
+       (
+         position(
+           'extensions.digest'
+           in pg_get_functiondef('public.confirm_completion(text)'::regprocedure)
+         ) > 0
+       )::text
 union all
 select 'listing_owner_update_policy',
        exists(
