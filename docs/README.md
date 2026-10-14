@@ -11,3 +11,4 @@ Welcome to the documentation for **Tolong** (Sime Darby Property University Hack
 - **Architecture & Data Models**: Schemas, API specs, and entity diagrams.
 - **Design & UI**: Color schemes, component guidelines, and user flows.
 - **Verification Flow**: In-person exchange verification mechanism (e.g. QR codes / OTP).
+- **Proposals Under Discussion**: [Post-Acceptance Task Coordination Chat](file:///c:/Users/Joe/OneDrive/Desktop/team-odyssey-SDP/team-odyssey-sdp/docs/PROPOSAL_TASK_COORDINATION_CHAT.md)
