@@ -103,15 +103,30 @@ CREATE POLICY "Participants can send task messages while active"
 
 ---
 
-## 4. Frontend UI Implementation
+## 4. Frontend UI Architecture (Designed for Easy Overhaul)
 
-### Component: `src/components/task-chat.tsx`
-- Embedded directly within `src/components/listing-detail.tsx` under the contact / connection panel.
-- **UI Elements:**
+To ensure **Member 5 can easily overhaul the entire UI** without touching backend logic:
+
+### 1. Headless Hook Separation: `src/lib/hooks/use-task-chat.ts`
+All state management, API requests, and message fetching are isolated in a custom hook:
+```ts
+export function useTaskChat(taskId: string) {
+  // Returns { messages, isLocked, busy, error, sendMessage, sendQuickStatus }
+}
+```
+*Benefit: Any developer or designer can completely rewrite or replace the visual component without risking breaks to the chat logic.*
+
+### 2. Presentational Component: `src/components/task-chat.tsx`
+- **Plug-and-play:** Consumes `useTaskChat(taskId)`. Can be rendered inside a modal, a slide-up mobile bottom sheet, or an independent mobile page.
+- **Overhaul-ready layout:**
   - Message thread display (chat bubbles: self on right, neighbour on left).
-  - Quick action chips for common logistics (e.g., *"On my way"*, *"I've arrived"*, *"5 mins late"*).
-  - Clean text input field with Send button.
-  - Locked banner once completed: *"Handover confirmed. Chat is now closed."*
+  - 1-tap quick action chips (*"On my way"*, *"I've arrived"*, *"5 mins late"*).
+  - Text input field with accessible send button.
+  - Locked banner once completed (*"Handover confirmed. Chat is closed."*).
+
+### 3. Isolated Styling:
+- Styles are namespaced under `.task-chat-*` classes and driven by design tokens (CSS variables for bubble colors, borders, and radius).
+- When Member 5 delivers the final Figma design system, the chat appearance can be re-skinned or converted to Tailwind CSS in minutes without refactoring components.
 
 ---
 
