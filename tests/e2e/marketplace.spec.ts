@@ -22,8 +22,8 @@ async function signIn(
   resident: { email: string; password: string },
 ) {
   await page.goto("/");
-  await page.getByLabel("Email").fill(resident.email);
-  await page.getByLabel("Password").fill(resident.password);
+  await page.getByLabel("Email address", { exact: true }).fill(resident.email);
+  await page.getByLabel("Password", { exact: true }).fill(resident.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Around the neighbourhood" }),

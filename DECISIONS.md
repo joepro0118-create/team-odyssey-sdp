@@ -23,3 +23,4 @@ These are demo placeholders, not claims that the whole team approved branding, d
 - 2026-10-12: An open listing can be accepted by one different resident. Acceptance is a match, not exchange completion; later cancellation, return, expiry, and completion rules remain for the team to decide.
 - 2026-10-12: Do not assign point values, reward inventory, confirmation methods, real identities, or final Supabase table designs in this contribution.
 - 2026-10-12: Defer the shared inclusion module until the core loop and team integrations work.
+- 2026-10-14: Selectively integrate Emma's login UI and Google PKCE flow into the working Supabase branch. Share one cookie-backed session; retain authenticated API routes, RLS and trusted database functions. Keep email demo signup. Do not reintroduce per-tab demo identities.

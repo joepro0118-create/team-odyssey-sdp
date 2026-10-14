@@ -27,8 +27,8 @@ The UI uses the camelCase contract in `src/lib/types.ts`; the server adapter map
 
 The compatibility migration was applied and verified on the live Tolong project on 2026-10-14. The remaining setup is:
 
-1. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` locally and in Vercel.
-2. Create two fictional demo accounts. The demo reward seed is already applied; rerun `docs/supabase/seed.sql` afterward only if the optional account-owned sample listings are wanted.
-3. Test the complete loop on two phones or separate browsers.
+1. Local public Supabase configuration and fictional requester/helper accounts already exist. Configure the same public variables in the intended Vercel deployment.
+2. See [auth integration](AUTH-INTEGRATION.md): Emma's login is integrated; Google provider configuration and access to her Vercel project remain outstanding.
+3. Test successful login, logout, and the complete loop on two phones or separate browsers. Do not create replacement accounts or rerun base migrations.
 
 The obsolete `/api/demo-session` endpoint and visible resident switcher were removed. The old in-memory classes remain only for isolated unit tests and are not used by the production application.

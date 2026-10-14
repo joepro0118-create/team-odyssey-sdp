@@ -46,6 +46,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [creating, setCreating] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const sequence = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -149,7 +150,13 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                 {feed?.resident.label.slice(0, 1).toUpperCase() ?? "R"}
               </span>
               <span>{feed?.resident.label ?? "Resident"}</span>
-              <button className="text-button" onClick={() => void onSignOut()}>Sign out</button>
+              <a className="text-button" href="/login">Account</a>
+              <button className="text-button" disabled={signingOut} onClick={async () => {
+                setSigningOut(true);
+                try { await onSignOut(); }
+                catch { setError("We couldn’t sign you out. Please try again."); }
+                finally { setSigningOut(false); }
+              }}>{signingOut ? "Signing out…" : "Sign out"}</button>
             </div>
           </div>
         </div>

@@ -33,10 +33,13 @@ Open [http://localhost:3000](http://localhost:3000). For a two-resident test, us
 ## Supabase integration
 
 - Browser authentication uses only the public project URL and publishable key.
+- Emma's login screen at /login uses the same cookie-backed session as the marketplace; Google is shown as unavailable until enabled in Supabase.
 - Every API request sends the current Supabase access token to a same-origin Next.js route.
 - The route verifies the user with Supabase Auth and performs database operations under that user's RLS context.
 - Trusted database functions perform acceptance, QR confirmation, point awards, and redemptions.
 - No service-role key or secret belongs in the browser or repository.
+
+See [authentication integration and remaining setup](docs/AUTH-INTEGRATION.md) for Google setup, testing, and deployment handoff.
 
 The frontend compatibility migration adds `area_label` and `timing` to listings and adds trusted listing-create/cancel functions. It must be applied after the two `20261013...` backend migrations.
 
