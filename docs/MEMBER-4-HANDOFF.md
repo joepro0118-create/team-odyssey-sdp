@@ -1,5 +1,7 @@
 # Member 4 backend handoff
 
+The new `/login` page is prepared for Supabase email/password and Google sign-in. See [AUTH-SETUP.md](AUTH-SETUP.md) for the public environment variables, provider settings, callback URL, and remaining verification. No credentials or live account configuration were added. Marketplace identity and listing adapters are still simulated and must be connected separately.
+
 The marketplace calls same-origin JSON APIs. Keep the response contract and replace the server store/session resolution to connect Supabase. The current service is a **single-process, in-memory demo**, not a production database adapter or authentication solution.
 
 On Vercel, `next.config.mjs` defaults to browser preview mode. `src/lib/client-api.ts` dispatches to `browser-preview.ts` in that mode, and the server memory endpoints return `503`. This is only a per-tab simulation with fictional data. After implementing durable authenticated APIs, set `NEXT_PUBLIC_DEMO_MODE=server` for the deployment and remove or update the preview notices. Do not enable the existing memory adapter on Vercel.

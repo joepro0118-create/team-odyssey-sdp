@@ -2,7 +2,13 @@
 
 A mobile-friendly neighbourhood-help prototype for the SDP University Hackathon 2026. This contribution implements **Member 3's marketplace feed, listing templates, request/offer/lending creation, and acceptance flow**.
 
-All residents, places, and listings are fictional. The demo uses no keys or external accounts.
+All residents, places, and listings are fictional. The marketplace demo runs without keys or external accounts. Optional account sign-in is prepared for Supabase.
+
+## Sign-in page
+
+Open `/login` or choose **Sign in** in the marketplace header. The page includes Google OAuth, email/password sign-in for existing accounts, a password visibility toggle, and sign-out for authenticated accounts.
+
+Per Member 3's request, authentication is **ready for Member 4 to connect**. Without Supabase configuration, the form and Google button are disabled and visitors can explore the demo. No fake login is performed. See [`docs/AUTH-SETUP.md`](docs/AUTH-SETUP.md). Signing in does not replace the demo resident selector or connect the listing backend.
 
 ## Run locally
 

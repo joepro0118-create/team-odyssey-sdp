@@ -2,6 +2,8 @@
 
 ## Confirmed with Member 3
 
+- 2026-10-14: Add a login page including Google sign-in. Leave the Supabase/Google account configuration for Member 4. The page disables credential entry while unconfigured and keeps a clear route into the fictional marketplace demo.
+
 - 2026-10-13: Create branch `Emma` and deploy a clearly labelled Vercel preview now; Member 4 connects Supabase later. The hosted preview uses per-tab simulated state that resets on reload, while the local server demo remains available.
 
 - 2026-10-12: Build Member 3's marketplace feed, templates, listing creation, and acceptance flow in the team repository.

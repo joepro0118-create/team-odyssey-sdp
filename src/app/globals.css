@@ -10,7 +10,9 @@
   line-height: 1.7;
 }
 
-.preview-notice strong { margin-right: 5px; }
+.preview-notice strong {
+  margin-right: 5px;
+}
 
 :root {
   --paper: #fafaf6;
@@ -220,6 +222,22 @@ p {
   color: var(--muted);
   font-size: 11px;
   white-space: nowrap;
+}
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.account-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .resident-picker {
   display: flex;
@@ -1508,6 +1526,20 @@ input[type="checkbox"] {
   }
 }
 @media (max-width: 640px) {
+  .header-right {
+    gap: 3px;
+  }
+  .account-link {
+    font-size: 10px;
+    padding: 0 4px;
+    gap: 4px;
+  }
+  .account-link > svg {
+    display: none;
+  }
+  .header-right .resident-avatar {
+    display: none;
+  }
   body {
     font-size: 14px;
   }

@@ -1,5 +1,14 @@
 # Verification record
 
+## Login update — 2026-10-14
+
+- `npm test`: all nine domain and browser-preview state tests passed.
+- `npm run typecheck` and `npm run build`: passed, including the login page, OAuth callback, and session-refresh proxy.
+- Playwright's HTTP checks passed for the unconfigured login page, disabled sign-in controls, and a callback that redirects safely to a local error page without creating a session. The existing marketplace API integration test also passed.
+- The mobile/desktop login browser scenario could not run: Microsoft Edge closed during launch, with Windows temporary-profile/pipe errors. No login screenshots or interactive browser checks are claimed.
+- Real Google consent, email authentication, session refresh, and sign-out require the Supabase configuration deferred to Member 4. These flows have not been verified against a live provider. See `AUTH-SETUP.md`.
+- Signing in does not connect the marketplace data backend or verify residency. The fictional demo identities and listings remain separate from Supabase accounts.
+
 ## Emma preview update — 2026-10-13
 
 - Nine automated domain/preview tests pass, including posting, switching fictional residents, acceptance, separate tab state, and reset behaviour.

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  UserRound,
   X,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
@@ -33,9 +34,10 @@ import { ListingCard } from "./listing-card";
 
 type Filter = "all" | ListingType;
 
-export function Marketplace() {
+export function Marketplace({ signedIn = false }: { signedIn?: boolean }) {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
-  const [currentResident, setCurrentResident] = useState<ResidentId>("resident-a");
+  const [currentResident, setCurrentResident] =
+    useState<ResidentId>("resident-a");
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState("");
@@ -139,7 +141,13 @@ export function Marketplace() {
         </span>
         <span className="demo-tag">DEMO</span>
       </div>
-      {isBrowserPreview && <div className="preview-notice" role="note"><strong>Interactive preview · this tab only.</strong> Switch demo residents to try posting and accepting. Refreshing resets the demo. Shared listings across phones are coming with Supabase.</div>}
+      {isBrowserPreview && (
+        <div className="preview-notice" role="note">
+          <strong>Interactive preview · this tab only.</strong> Switch demo
+          residents to try posting and accepting. Refreshing resets the demo.
+          Shared listings across phones are coming with Supabase.
+        </div>
+      )}
       <header className="site-header">
         <div className="header-inner">
           <a className="brand" href="/" aria-label="Tolong home">
@@ -166,6 +174,10 @@ export function Marketplace() {
             </button>
           </nav>
           <div className="header-right">
+            <a className="account-link" href="/login">
+              <UserRound size={17} />
+              <span>{signedIn ? "Account" : "Sign in"}</span>
+            </a>
             <span className="area-label">
               <MapPin size={16} />
               Demo neighbourhood
@@ -515,8 +527,10 @@ export function Marketplace() {
             A university hackathon prototype. All residents, listings, and
             places are fictional.
             <br />
-            {isBrowserPreview ? "This tab’s demo resets on refresh and does not sync across phones." : "Demo data resets when the server restarts."} Tolong connects
-            residents; it does not employ or insure them.
+            {isBrowserPreview
+              ? "This tab’s demo resets on refresh and does not sync across phones."
+              : "Demo data resets when the server restarts."}{" "}
+            Tolong connects residents; it does not employ or insure them.
           </p>
           <span className="footer-note">
             Made for a little more togetherness.
