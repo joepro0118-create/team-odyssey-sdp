@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, X } from "lucide-react";
 import { api } from "@/lib/client-api";
 import type { FeedResponse, Listing, RewardsResponse } from "@/lib/types";
 
@@ -35,6 +35,9 @@ export function ProfilePanel({
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
   const [points, setPoints] = useState<number | null>(null);
+  const [easyMode, setEasyMode] = useState(false);
+  // "coming soon" toast for stub rows
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -50,6 +53,13 @@ export function ProfilePanel({
     };
   }, []);
 
+  // Auto-dismiss toast after 2.5 s
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
   const name = profileName(resident?.label || "Resident");
   const area = safeArea(resident?.area || "");
   const posts = listings ? listings.filter((item) => item.isOwner).length : null;
@@ -64,9 +74,34 @@ export function ProfilePanel({
     posts !== null ? { value: String(posts), label: "posts" } : null,
   ].filter((stat): stat is { value: string; label: string } => stat !== null);
 
+  function showComingSoon(feature: string) {
+    setToast(`${feature} — coming soon`);
+  }
+
   return (
     <div className="sdp-screen-view profile-view" role="region" aria-label="Profile">
       <div className="profile-band-bg" aria-hidden="true" />
+
+      {/* Coming-soon toast */}
+      {toast && (
+        <div
+          className="sdp-notice-banner"
+          role="status"
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            right: 16,
+            zIndex: 50,
+          }}
+        >
+          <span>{toast}</span>
+          <button onClick={() => setToast("")} aria-label="Dismiss">
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
       <div className="sdp-screen-body profile-body">
         <h1 className="profile-title">Profile</h1>
         {error && <div className="sdp-error-banner">{error}</div>}
@@ -82,9 +117,13 @@ export function ProfilePanel({
             <div className="profile-info-col">
               <div className="profile-name-row">
                 <h2 className="profile-name">{name}</h2>
-                <span className="profile-edit" aria-disabled="true">
+                <button
+                  type="button"
+                  className="profile-edit"
+                  onClick={() => showComingSoon("Edit profile")}
+                >
                   Edit
-                </span>
+                </button>
               </div>
               {area && <div className="profile-area">{area}</div>}
               {resident && (
@@ -108,30 +147,54 @@ export function ProfilePanel({
         )}
 
         <div className="profile-settings">
-          <div className="profile-row">
+          <button
+            type="button"
+            className="profile-row"
+            onClick={() => showComingSoon("Notifications")}
+          >
             <div className="profile-row-title">Notifications</div>
             <ChevronRight size={18} aria-hidden="true" />
-          </div>
-          <div className="profile-row">
+          </button>
+
+          <button
+            type="button"
+            className="profile-row"
+            onClick={() => showComingSoon("Privacy")}
+          >
             <div>
               <div className="profile-row-title">Privacy</div>
               <div className="profile-row-sub">What neighbours can see</div>
             </div>
             <ChevronRight size={18} aria-hidden="true" />
-          </div>
-          <div className="profile-row">
+          </button>
+
+          <button
+            type="button"
+            className="profile-row"
+            aria-pressed={easyMode}
+            onClick={() => setEasyMode((v) => !v)}
+          >
             <div>
               <div className="profile-row-title">Easy mode</div>
               <div className="profile-row-sub">Larger text and simpler screens</div>
             </div>
-            <span className="profile-switch is-on" aria-hidden="true">
+            <span
+              className={`profile-switch ${easyMode ? "is-on" : ""}`}
+              aria-hidden="true"
+            >
               <span />
             </span>
-          </div>
-          <div className="profile-row">
+          </button>
+
+          <button
+            type="button"
+            className="profile-row"
+            onClick={() => showComingSoon("Help and support")}
+          >
             <div className="profile-row-title">Help and support</div>
             <ChevronRight size={18} aria-hidden="true" />
-          </div>
+          </button>
+
           <button
             className="profile-row profile-logout"
             type="button"

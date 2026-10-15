@@ -1878,6 +1878,7 @@ button {
   background: #e3dedc;
   position: relative;
   flex: none;
+  transition: background 0.2s ease;
 }
 
 .profile-switch span {
@@ -1889,6 +1890,7 @@ button {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(27, 20, 22, 0.2);
+  transition: left 0.2s ease, right 0.2s ease;
 }
 
 .profile-switch.is-on {
@@ -1911,6 +1913,19 @@ button {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+button.profile-row:not(:disabled) {
+  cursor: pointer;
+}
+
+button.profile-row:not(:disabled):hover {
+  background: #faf8f7;
+}
+
+button.profile-row:not(:disabled):active {
+  background: #f3efed;
+}
+
 
 .profile-privacy-note {
   font-size: 12px;
