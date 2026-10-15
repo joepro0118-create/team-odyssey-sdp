@@ -21,9 +21,10 @@ export class MarketplaceError extends Error {
 type StoredListing = ListingInput & {
   id: string;
   createdAt: string;
-  status: "open" | "accepted";
+  status: "open" | "accepted" | "completed" | "cancelled";
   ownerId: ResidentId;
   acceptedBy: ResidentId | null;
+  assignmentId?: string;
 };
 
 const demoContacts: Record<ResidentId, { name: string; meetingNote: string }> =
@@ -148,7 +149,9 @@ export class DemoMarketplace {
       timing: item.timing,
       createdAt: item.createdAt,
       status: item.status,
-      pointsReward: 50,
+      pointsReward:
+        item.pointsReward ??
+        (item.type === "offer" ? 0 : item.type === "lend" ? 10 : 20),
       isOwner: item.ownerId === resident,
       isParticipant: item.ownerId === resident || item.acceptedBy === resident,
     };
@@ -162,6 +165,9 @@ export class DemoMarketplace {
     const item = this.find(id);
     const view: ListingDetail = {
       ...this.publicView(item, resident),
+      assignmentId:
+        item.assignmentId ??
+        (item.status !== "open" ? `asgn-${item.id}` : undefined),
       viewerRole:
         item.ownerId === resident
           ? "requester"
@@ -169,8 +175,11 @@ export class DemoMarketplace {
             ? "helper"
             : "viewer",
     };
-    if (item.status === "accepted" && view.isParticipant) {
-      const other = item.ownerId === resident ? item.acceptedBy! : item.ownerId;
+    if (item.status !== "open" && view.isParticipant) {
+      const other =
+        item.ownerId === resident
+          ? item.acceptedBy ?? "resident-b"
+          : item.ownerId;
       view.contact = { ...demoContacts[other] };
     }
     return view;
@@ -202,6 +211,55 @@ export class DemoMarketplace {
     // No await between checking and updating: atomic within this single demo process.
     item.status = "accepted";
     item.acceptedBy = resident;
+    item.assignmentId = `asgn-${item.id}`;
     return this.detail(id, resident);
+  }
+
+  simulateAccept(id: string, resident: ResidentId): ListingDetail {
+    const item = this.find(id);
+    if (item.status !== "open") return this.detail(id, resident);
+    const mockHelper: ResidentId =
+      item.ownerId === "resident-a" ? "resident-b" : "resident-a";
+    item.status = "accepted";
+    item.acceptedBy = mockHelper;
+    item.assignmentId = `asgn-${item.id}`;
+    return this.detail(id, resident);
+  }
+
+  complete(idOrAssignmentId: string): {
+    success: boolean;
+    pointsAwarded: number;
+    status: "completed";
+  } {
+    const cleanId = idOrAssignmentId.replace(/^asgn-/, "");
+    const item = this.listings.find(
+      (l) =>
+        l.id === idOrAssignmentId ||
+        l.id === cleanId ||
+        l.assignmentId === idOrAssignmentId,
+    );
+    if (item) {
+      item.status = "completed";
+      return {
+        success: true,
+        pointsAwarded: item.pointsReward ?? 20,
+        status: "completed",
+      };
+    }
+    // Fallback if specific item was not found, complete the first active accepted item
+    const firstAccepted = this.listings.find((l) => l.status === "accepted");
+    if (firstAccepted) {
+      firstAccepted.status = "completed";
+      return {
+        success: true,
+        pointsAwarded: firstAccepted.pointsReward ?? 20,
+        status: "completed",
+      };
+    }
+    return {
+      success: true,
+      pointsAwarded: 20,
+      status: "completed",
+    };
   }
 }

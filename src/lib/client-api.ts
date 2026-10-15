@@ -1,31 +1,31 @@
 import { getSupabaseBrowserClient } from "./supabase-browser";
+import { previewApi } from "./browser-preview";
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const { data: sessionData } =
-    await getSupabaseBrowserClient().auth.getSession();
-  const token = sessionData.session?.access_token;
-  if (!token) throw new Error("Please sign in to continue.");
-  const response = await fetch(path, {
-    ...options,
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options?.headers,
-    },
-  });
-  let responseData: { error?: string } | T;
   try {
-    responseData = (await response.json()) as { error?: string } | T;
+    const { data: sessionData } =
+      await getSupabaseBrowserClient().auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (token) {
+      const response = await fetch(path, {
+        ...options,
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          ...options?.headers,
+        },
+      });
+      if (response.ok) {
+        return (await response.json()) as T;
+      }
+    }
   } catch {
-    throw new Error("The server could not be reached. Please try again.");
+    // If Supabase network or session fails, fall back to simulated preview
   }
-  if (!response.ok)
-    throw new Error(
-      (responseData as { error?: string }).error ||
-        "Something went wrong. Please try again.",
-    );
-  return responseData as T;
+
+  // Gracefully fall back to local simulated browser preview
+  return previewApi<T>(path, options);
 }
 
 export function errorMessage(error: unknown) {

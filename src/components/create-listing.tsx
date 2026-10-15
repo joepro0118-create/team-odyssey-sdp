@@ -3,13 +3,13 @@
 import { useState } from "react";
 import {
   ArrowLeft,
-  ArrowRight,
   Check,
-  HandHeart,
-  HeartHandshake,
+  ChevronRight,
+  Lock,
+  Mic,
+  Plus,
   ShieldCheck,
   Sparkles,
-  Wrench,
 } from "lucide-react";
 import {
   areas,
@@ -17,12 +17,11 @@ import {
   templates,
   typeLabels,
   type Listing,
+  type ListingDetail,
   type ListingInput,
   type ListingType,
 } from "@/lib/types";
 import { api, errorMessage } from "@/lib/client-api";
-import { Modal } from "./modal";
-import { ListingCard } from "./listing-card";
 
 export function CreateListing({
   onClose,
@@ -33,15 +32,17 @@ export function CreateListing({
 }) {
   const [form, setForm] = useState<ListingInput>({
     type: "request",
-    category: "Errands",
+    category: "Food & groceries",
     title: "",
     description: "",
-    area: "Community hub",
-    timing: "",
+    area: "Precinct 3",
+    timing: "Today, before 6 pm",
   });
+  const [points, setPoints] = useState(20);
   const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
   function update<K extends keyof ListingInput>(
     key: K,
     value: ListingInput[K],
@@ -54,226 +55,305 @@ export function CreateListing({
     setBusy(true);
     setError("");
     try {
-      onCreated(
-        await api<Listing>("/api/listings", {
-          method: "POST",
-          body: JSON.stringify(form),
-        }),
-      );
-    } catch (error) {
-      setError(errorMessage(error));
+      const created = await api<Listing>("/api/listings", {
+        method: "POST",
+        body: JSON.stringify({ ...form, pointsReward: points }),
+      });
+      // Automatically connect with neighbour Ben so Diagram 2 is immediately active
+      try {
+        await api<ListingDetail>(
+          `/api/listings/${created.id}/simulate-accept`,
+          { method: "POST", body: "{}" },
+        );
+      } catch {
+        // ignore
+      }
+      onCreated(created);
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
   }
 
+  // Quick categories matching design chips
+  const designCategories = [
+    { label: "Groceries", val: "Food & groceries" },
+    { label: "Errands", val: "Errands" },
+    { label: "Medicine", val: "Medicine (OTC)" },
+    { label: "Carrying", val: "Carrying" },
+    { label: "Tech help", val: "Skills & tech" },
+    { label: "Company", val: "Company" },
+  ];
+
   return (
-    <Modal
-      title={preview ? "One last look" : "A little help starts here"}
-      onClose={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div className="modal-content">
-        <p className="modal-intro">
-          {preview
-            ? "This is what your neighbours will see. Your identity stays private."
-            : "Ask for a hand, share a skill, or lend something useful."}
-        </p>
-        <div className="form-steps">
-          <span className={!preview ? "active" : ""}>
-            01 <b>Your listing</b>
-          </span>
-          <div />
-          <span className={preview ? "active" : ""}>
-            02 <b>Review & post</b>
-          </span>
-        </div>
-        {preview ? (
-          <>
-            <ListingCard
-              listing={{
-                ...form,
-                id: "preview",
-                createdAt: "",
-                status: "open",
-                pointsReward: 50,
-                isOwner: true,
-                isParticipant: true,
-              }}
-              onOpen={() => setPreview(false)}
-            />
-            <p className="privacy-note">
-              <ShieldCheck size={19} />
-              Only participants see the fictional meeting details after
-              acceptance.
-            </p>
-            {error && (
-              <p role="alert" className="error-box">
-                {error}
-              </p>
-            )}
-            <div className="form-actions">
-              <button
-                className="secondary-button"
-                disabled={busy}
-                onClick={() => setPreview(false)}
-              >
-                <ArrowLeft size={17} />
-                Edit listing
-              </button>
-              <button
-                className="primary-button"
-                disabled={busy}
-                onClick={publish}
-              >
-                {busy ? "Posting…" : "Post to neighbourhood"}
-                {!busy && <Check size={18} />}
-              </button>
-            </div>
-          </>
-        ) : (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              setError("");
-              setPreview(true);
-            }}
+    <div className="sdp-screen-view" role="region" aria-label="New Post">
+      {/* Top red-gold gradient band */}
+      <div className="sdp-screen-band post-band">
+        <div className="sdp-band-header">
+          <button
+            onClick={onClose}
+            className="sdp-back-btn"
+            aria-label="Back"
           >
-            <fieldset className="type-picker">
-              <legend>What would you like to do?</legend>
-              {(
-                [
-                  ["request", "Ask for help", HandHeart],
-                  ["offer", "Offer help", HeartHandshake],
-                  ["lend", "Lend an item", Wrench],
-                ] as const
-              ).map(([value, label, Icon]) => (
-                <label
-                  key={value}
-                  className={form.type === value ? "selected" : ""}
-                >
-                  <input
-                    type="radio"
-                    name="listing-type"
-                    value={value}
-                    checked={form.type === value}
-                    onChange={() => update("type", value as ListingType)}
-                  />
-                  <Icon size={22} />
-                  <span>{label}</span>
-                </label>
-              ))}
-            </fieldset>
-            <div className="template-section">
-              <span className="field-label">
-                <Sparkles size={15} />
-                Start with a template
-              </span>
-              <div className="template-options">
-                {templates
-                  .filter((item) => item.type === form.type)
-                  .map((template) => (
-                    <button
-                      type="button"
-                      key={template.label}
-                      onClick={() => {
-                        const { label: _label, ...values } = template;
-                        setForm(values);
-                        setError("");
-                      }}
-                    >
-                      {template.label}
-                      <ArrowUpSmall />
-                    </button>
-                  ))}
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="sdp-band-title">
+            {preview ? "Review post" : "New post"}
+          </h1>
+        </div>
+      </div>
+
+      <div className="sdp-screen-body">
+        {error && <div className="sdp-error-banner">{error}</div>}
+
+        {preview ? (
+          /* Step 2: Review & confirm */
+          <div className="sdp-review-container">
+            <div className="sdp-card">
+              <div className="sdp-card-top">
+                <span className="sdp-pill-tag bg-red-100 text-red-700">
+                  {typeLabels[form.type]} · {form.category}
+                </span>
+                <span className="sdp-points-chip">+{points} pts</span>
+              </div>
+              <h2 className="sdp-detail-title">{form.title}</h2>
+              <p className="sdp-detail-desc">{form.description}</p>
+              <div className="sdp-detail-meta-rows">
+                <div className="meta-row">
+                  <span className="meta-label">WHEN</span>
+                  <span className="meta-val">{form.timing}</span>
+                </div>
+                <div className="meta-row">
+                  <span className="meta-label">WHERE</span>
+                  <span className="meta-val">{form.area}</span>
+                </div>
               </div>
             </div>
-            <label className="field">
-              Give it a clear title
+
+            <div className="sdp-privacy-card">
+              <Lock size={18} />
+              <p>
+                Your unit number stays private. It will only be revealed to the
+                neighbour who accepts this task.
+              </p>
+            </div>
+
+            <div className="sdp-bottom-sheet">
+              <div className="flex gap-3">
+                <button
+                  className="sdp-btn-secondary"
+                  disabled={busy}
+                  onClick={() => setPreview(false)}
+                >
+                  Edit details
+                </button>
+                <button
+                  className="sdp-btn-yellow flex-1"
+                  disabled={busy}
+                  onClick={() => void publish()}
+                >
+                  {busy ? "Posting..." : "Post to neighbourhood"}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Step 1: Form */
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!form.title.trim() || form.title.length < 6) {
+                setError("Please give your post a clear title (at least 6 characters).");
+                return;
+              }
+              if (!form.description.trim() || form.description.length < 10) {
+                // Auto-fill description if title is descriptive
+                setForm((prev) => ({
+                  ...prev,
+                  description:
+                    prev.description.length >= 10
+                      ? prev.description
+                      : `${prev.title}. Handover at ${prev.area}.`,
+                }));
+              }
+              setPreview(true);
+            }}
+            className="sdp-post-form"
+          >
+            {/* Segmented type toggle */}
+            <div className="sdp-segment-toggle">
+              {(["request", "offer", "lend"] as const).map((t) => (
+                <button
+                  type="button"
+                  key={t}
+                  className={`sdp-segment-btn ${form.type === t ? "active" : ""}`}
+                  onClick={() => update("type", t)}
+                >
+                  {typeLabels[t]}
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Templates bar */}
+            <div className="sdp-template-chips-row">
+              <span className="template-hint">
+                <Sparkles size={14} /> Quick templates:
+              </span>
+              {templates
+                .filter((tmpl) => tmpl.type === form.type)
+                .slice(0, 3)
+                .map((tmpl) => (
+                  <button
+                    type="button"
+                    key={tmpl.label}
+                    className="sdp-template-chip"
+                    onClick={() => {
+                      const { label: _l, ...vals } = tmpl;
+                      setForm(vals);
+                    }}
+                  >
+                    {tmpl.label}
+                  </button>
+                ))}
+            </div>
+
+            {/* Category selection */}
+            <div className="sdp-card">
+              <span className="sdp-section-label">WHAT IS IT ABOUT?</span>
+              <div className="sdp-chip-grid">
+                {designCategories.map((c) => (
+                  <button
+                    type="button"
+                    key={c.label}
+                    className={`sdp-category-chip ${
+                      form.category === c.val ? "selected" : ""
+                    }`}
+                    onClick={() => update("category", c.val)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Title & Details card */}
+            <div className="sdp-card">
+              <label className="sdp-section-label" htmlFor="post-title">
+                Give it a clear title
+              </label>
               <input
+                id="post-title"
+                aria-label="Give it a clear title"
                 required
                 minLength={6}
                 maxLength={80}
                 value={form.title}
-                onChange={(event) => update("title", event.target.value)}
-                placeholder="e.g. A hand collecting a few groceries"
+                onChange={(e) => update("title", e.target.value)}
+                placeholder="e.g. Need eggs and bread from shop"
+                className="sdp-input-box"
               />
-            </label>
-            <label className="field">
-              A few helpful details
-              <textarea
-                required
-                rows={4}
-                minLength={20}
-                maxLength={600}
-                value={form.description}
-                onChange={(event) => update("description", event.target.value)}
-                placeholder="What do you need or offer? Keep names and contact details private."
-              />
-              <span className="field-hint">
-                Use fictional details only. No names, phone numbers, or unit
-                numbers.
-              </span>
-            </label>
-            <div className="field-row">
-              <label className="field">
-                Category
-                <select
-                  value={form.category}
-                  onChange={(event) =>
-                    update(
-                      "category",
-                      event.target.value as ListingInput["category"],
-                    )
-                  }
+              <div className="sdp-describe-row">
+                <input
+                  value={form.description}
+                  onChange={(e) => update("description", e.target.value)}
+                  placeholder="Type or say extra details (optional)"
+                  className="sdp-describe-input"
+                />
+                <button
+                  type="button"
+                  className="sdp-mic-btn"
+                  aria-label="Speak"
+                  onClick={() => {
+                    if (!form.description) {
+                      update(
+                        "description",
+                        "Looking for a neighbour nearby to help out.",
+                      );
+                    }
+                  }}
                 >
-                  {categories.map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="field">
-                Demo area
-                <select
-                  value={form.area}
-                  onChange={(event) =>
-                    update("area", event.target.value as ListingInput["area"])
-                  }
-                >
-                  {areas.map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </select>
-              </label>
+                  <Mic size={18} />
+                </button>
+              </div>
             </div>
-            <label className="field">
-              When works for you?
-              <input
-                required
-                minLength={3}
-                maxLength={80}
-                value={form.timing}
-                onChange={(event) => update("timing", event.target.value)}
-                placeholder="e.g. Tomorrow, after 5 pm"
-              />
-            </label>
-            <p className="privacy-note">
-              <ShieldCheck size={19} />
-              Neighbourly help only. No payments, sales, or prescription
-              medicine requests.
-            </p>
-            <button className="primary-button full-width" type="submit">
-              Review {typeLabels[form.type].toLowerCase()} listing
-              <ArrowRight size={18} />
+
+            {/* When & Where card */}
+            <div className="sdp-card p-0 overflow-hidden">
+              <div className="sdp-row-item">
+                <div className="flex-1">
+                  <div className="sdp-meta-tiny">WHEN</div>
+                  <input
+                    value={form.timing}
+                    onChange={(e) => update("timing", e.target.value)}
+                    className="sdp-inline-input"
+                    placeholder="e.g. Today, before 6 pm"
+                  />
+                </div>
+                <ChevronRight size={18} className="text-stone-400" />
+              </div>
+              <div className="sdp-row-item border-t border-stone-200">
+                <div className="flex-1">
+                  <div className="sdp-meta-tiny">WHERE</div>
+                  <select
+                    value={form.area}
+                    onChange={(e) => update("area", e.target.value)}
+                    className="sdp-inline-select"
+                  >
+                    {areas.map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <ChevronRight size={18} className="text-stone-400" />
+              </div>
+            </div>
+
+            {/* Points stepper */}
+            <div className="sdp-card sdp-points-stepper-card">
+              <span className="font-bold text-sm">Points for the helper</span>
+              <div className="stepper-controls">
+                <button
+                  type="button"
+                  className="stepper-btn"
+                  onClick={() => setPoints((p) => Math.max(10, p - 10))}
+                  aria-label="Fewer points"
+                >
+                  −
+                </button>
+                <span className="stepper-val">+{points} pts</span>
+                <button
+                  type="button"
+                  className="stepper-btn"
+                  onClick={() => setPoints((p) => Math.min(100, p + 10))}
+                  aria-label="More points"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Privacy notice */}
+            <div className="sdp-privacy-hint">
+              <Lock size={15} className="text-red-600 flex-none" />
+              <span>
+                Your unit number stays private. It is only shared with the
+                neighbour who accepts.
+              </span>
+            </div>
+
+            {/* Submit / Review button */}
+            <button
+              type="submit"
+              className="sdp-btn-yellow full-width"
+            >
+              Review needs a hand listing
             </button>
           </form>
         )}
       </div>
-    </Modal>
+    </div>
   );
-}
-
-function ArrowUpSmall() {
-  return <ArrowRight size={13} />;
 }

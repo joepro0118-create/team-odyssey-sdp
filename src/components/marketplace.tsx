@@ -1,28 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  CircleHelp,
-  HandHeart,
-  HeartHandshake,
-  LayoutGrid,
-  Leaf,
-  MapPin,
-  Plus,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  X,
-  Gift,
-} from "lucide-react";
+import { X } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
 import {
-  categories,
   type FeedResponse,
   type ListingType,
 } from "@/lib/types";
@@ -30,37 +11,37 @@ import { CreateListing } from "./create-listing";
 import { ListingDetail } from "./listing-detail";
 import { ListingCard } from "./listing-card";
 import { RewardsPanel } from "./rewards-panel";
+import { ProfilePanel } from "./profile-panel";
 
-type Filter = "all" | ListingType;
+type Tab = "home" | "activity" | "rewards" | "profile";
+type FilterType = "all" | ListingType;
 
 export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [tab, setTab] = useState<"feed" | "activity">("feed");
-  const [filter, setFilter] = useState<Filter>("all");
-  const [category, setCategory] = useState("all");
-  const [query, setQuery] = useState("");
-  const [showAccepted, setShowAccepted] = useState(false);
+  const [tab, setTab] = useState<Tab>("home");
+  const [filter, setFilter] = useState<FilterType>("all");
   const [creating, setCreating] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [rewardsOpen, setRewardsOpen] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedQrMode, setSelectedQrMode] = useState<"show" | "scan" | null>(
+    null,
+  );
   const sequence = useRef(0);
 
   const refresh = useCallback(async () => {
-    const requestNumber = ++sequence.current;
+    const reqNum = ++sequence.current;
     try {
       const data = await api<FeedResponse>("/api/listings");
-      if (requestNumber === sequence.current) {
+      if (reqNum === sequence.current) {
         setFeed(data);
         setError("");
       }
-    } catch (error) {
-      if (requestNumber === sequence.current) setError(errorMessage(error));
+    } catch (err) {
+      if (reqNum === sequence.current) setError(errorMessage(err));
     } finally {
-      if (requestNumber === sequence.current) setLoading(false);
+      if (reqNum === sequence.current) setLoading(false);
     }
   }, []);
 
@@ -69,9 +50,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void refresh();
     }, 6000);
-    const onFocus = () => {
-      void refresh();
-    };
+    const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
     return () => {
       window.clearInterval(interval);
@@ -81,472 +60,443 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   }, [refresh]);
 
   const listings = feed?.listings ?? [];
-  const activeCount = listings.filter((item) => item.status === "open").length;
-  const myCount = listings.filter((item) => item.isParticipant).length;
-  const filtered = listings.filter((item) => {
-    if (tab === "activity" && !item.isParticipant) return false;
-    if (tab === "feed" && !showAccepted && item.status !== "open") return false;
+  const myRequests = listings.filter((l) => l.isOwner);
+  const myTasks = listings.filter((l) => l.isParticipant && !l.isOwner);
+
+  const filteredFeed = listings.filter((item) => {
+    // Hide own requests from Home feed — Home feed is exclusively for helping neighbours
+    if (item.isOwner) return false;
     if (filter !== "all" && item.type !== filter) return false;
-    if (category !== "all" && item.category !== category) return false;
-    return `${item.title} ${item.description} ${item.category} ${item.area}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase());
+    return true;
   });
 
-  function changeTab(value: typeof tab) {
-    setTab(value);
-    setQuery("");
-    setFilter("all");
-    setCategory("all");
-  }
-
   return (
-    <>
-      <a href="#marketplace" className="skip-link">
-        Skip to marketplace
+    <div className="sdp-phone-canvas">
+      {/* Skip link for accessibility */}
+      <a href="#main-home" className="skip-link">
+        Skip to feed
       </a>
-      <div className="demo-bar">
-        <span>
-          <i />A neighbourhood of possibilities. A prototype with fictional
-          data.
-        </span>
-        <span className="demo-tag">DEMO</span>
-      </div>
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="brand" href="/" aria-label="Tolong home">
-            <span className="brand-symbol">
-              <HeartHandshake size={25} strokeWidth={1.7} />
-            </span>
-            <span>
-              tolong<span className="brand-dot">.</span>
-            </span>
-          </a>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <button
-              onClick={() => changeTab("feed")}
-              aria-current={tab === "feed" ? "page" : undefined}
-            >
-              Neighbourhood
-            </button>
-            <button onClick={() => setRewardsOpen(true)}>
-              Rewards
-            </button>
-            <button
-              onClick={() => changeTab("activity")}
-              aria-current={tab === "activity" ? "page" : undefined}
-            >
-              My activity
-              {myCount > 0 && <span className="nav-count">{myCount}</span>}
-            </button>
-          </nav>
-          <div className="header-right">
-            <span className="area-label">
-              <MapPin size={16} />
-              {feed?.resident.area ?? "Demo neighbourhood"}
-            </span>
-            <div className="resident-picker">
-              <span className="resident-avatar" aria-hidden="true">
-                {feed?.resident.label.slice(0, 1).toUpperCase() ?? "R"}
-              </span>
-              <span>{feed?.resident.label ?? "Resident"}</span>
-              <a className="text-button" href="/login">Account</a>
-              <button className="text-button" disabled={signingOut} onClick={async () => {
-                setSigningOut(true);
-                try { await onSignOut(); }
-                catch { setError("We couldn’t sign you out. Please try again."); }
-                finally { setSigningOut(false); }
-              }}>{signingOut ? "Signing out…" : "Sign out"}</button>
-            </div>
-          </div>
-        </div>
-      </header>
 
-      <main className="page-shell">
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
-            <p className="eyebrow hero-eyebrow">
-              <span />
-              GOOD NEIGHBOURS. EVERYDAY POSSIBILITIES.
-            </p>
-            <h1 id="hero-title">
-              A little help.
-              <br />A better <em>neighbourhood.</em>
-            </h1>
-            <p>
-              Someone nearby could use a hand.
-              <br className="mobile-break" /> Yours might be just the one.
-            </p>
-            <button
-              className="primary-button hero-button"
-              onClick={() => setCreating(true)}
-              disabled={loading}
-            >
-              <Plus size={19} />
-              Post to your neighbourhood
-            </button>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="orbit orbit-one" />
-            <div className="orbit orbit-two" />
-            <div className="art-note note-top">
-              <span className="note-icon peach">
-                <HandHeart size={23} />
-              </span>
-              <span>
-                A small favour.
-                <br />
-                <b>A big difference.</b>
-              </span>
-              <Sparkles size={17} />
-            </div>
-            <div className="house-group">
-              <div className="tree tree-left">
-                <div />
-                <i />
-              </div>
-              <div className="house house-back">
-                <i className="roof" />
-                <div className="house-window" />
-                <div className="house-door" />
-              </div>
-              <div className="house house-front">
-                <i className="roof" />
-                <div className="house-window" />
-                <div className="house-window second" />
-                <div className="house-door" />
-              </div>
-              <div className="tree tree-right">
-                <div />
-                <i />
-              </div>
-              <div className="ground" />
-            </div>
-            <div className="art-note note-bottom">
-              <span className="note-icon sage">
-                <Users size={22} />
-              </span>
-              <span>
-                Closer to home.
-                <br />
-                <b>Closer to each other.</b>
-              </span>
-              <span className="little-heart">♡</span>
-            </div>
-          </div>
-        </section>
-
-        <div className="content-layout">
-          <aside className="sidebar">
-            <div className="sidebar-nav">
-              <span className="eyebrow">YOUR LITTLE CORNER</span>
-              <button
-                className={tab === "feed" ? "active" : ""}
-                onClick={() => changeTab("feed")}
-              >
-                <LayoutGrid size={19} />
-                Neighbourhood<span>{activeCount}</span>
-              </button>
-              <button
-                className={tab === "activity" ? "active" : ""}
-                onClick={() => changeTab("activity")}
-              >
-                <HeartHandshake size={19} />
-                My activity{myCount > 0 && <span>{myCount}</span>}
-              </button>
-              <button onClick={() => setRewardsOpen(true)}>
-                <Gift size={19} />
-                Rewards
-              </button>
-            </div>
-            <div className="kindness-card">
-              <div className="line-art">
-                <Leaf size={34} strokeWidth={1.1} />
-                <Sparkles size={19} strokeWidth={1.2} />
-              </div>
-              <h3>
-                It starts with
-                <br />a little kindness.
-              </h3>
-              <p>An extra pair of hands. A tool to borrow. A skill to share.</p>
-              <button
-                className="text-button"
-                onClick={() => setCreating(true)}
-                disabled={loading}
-              >
-                What can you offer?
-                <ArrowUpRight size={18} />
-              </button>
-            </div>
-            <div className="how-it-works">
-              <h3>
-                <CircleHelp size={16} />
-                How it works
-              </h3>
-              <ol>
-                <li>
-                  <span>1</span>Post a need or an offer
-                </li>
-                <li>
-                  <span>2</span>Connect with a neighbour
-                </li>
-                <li>
-                  <span>3</span>Meet and lend a hand
-                </li>
-              </ol>
-              <p>
-                Meet in person, confirm by QR, then earn demo reward points.
-              </p>
-            </div>
-            <div className="privacy-aside">
-              <ShieldCheck size={18} />
-              <p>
-                Private by design.
-                <br />
-                Your identity stays off the feed.
-              </p>
-            </div>
-          </aside>
-
-          <section
-            id="marketplace"
-            className="feed-section"
-            aria-labelledby="feed-heading"
-            tabIndex={-1}
-          >
-            <div className="feed-heading">
-              <div>
-                <span className="eyebrow">
-                  {tab === "feed"
-                    ? "SMALL ACTS, SHARED EVERY DAY"
-                    : "YOUR NEIGHBOURLY CONNECTIONS"}
-                </span>
-                <h2 id="feed-heading">
-                  {tab === "feed" ? "Around the neighbourhood" : "My activity"}
-                  <span>{tab === "feed" ? activeCount : myCount}</span>
-                </h2>
-              </div>
-              <span className="live-label">
-                <i />
-                Live Supabase feed
-              </span>
-            </div>
-            <p className="feed-subtitle">
-              {tab === "feed"
-                ? "Find a way to help, or the helping hand you need."
-                : "The listings you posted and the connections you made."}
-            </p>
-            <div className="filter-tabs" role="group" aria-label="Listing type">
-              {(
-                [
-                  ["all", "Everything"],
-                  ["request", "Needs a hand"],
-                  ["offer", "Offering help"],
-                  ["lend", "To borrow"],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  aria-pressed={filter === value}
-                  className={filter === value ? "active" : ""}
-                  onClick={() => setFilter(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="search-row">
-              <label className="search-box">
-                <Search size={18} />
-                <span className="sr-only">Search listings</span>
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Try groceries, gardening, a helping hand…"
-                />
-              </label>
-              <label className="category-select">
-                <span className="sr-only">Filter by category</span>
-                <select
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                >
-                  <option value="all">All categories</option>
-                  {categories.map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} />
-              </label>
-            </div>
-            <div className="results-row">
-              <span>
-                {loading
-                  ? "Finding nearby possibilities…"
-                  : `${filtered.length} ${filtered.length === 1 ? "listing" : "listings"}${tab === "activity" ? " in your activity" : " to explore"}`}
-              </span>
-              {tab === "feed" && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={showAccepted}
-                    onChange={(event) => setShowAccepted(event.target.checked)}
-                  />
-                  Include accepted
-                </label>
-              )}
-            </div>
-            {notice && (
-              <div className="notice" role="status">
-                <Check size={18} />
-                {notice}
-                <button
-                  className="icon-button"
-                  onClick={() => setNotice("")}
-                  aria-label="Dismiss notification"
-                >
-                  <X size={17} />
-                </button>
-              </div>
-            )}
-            {error && (
-              <div className="error-box" role="alert">
-                {error}
-                <button className="text-button" onClick={() => void refresh()}>
-                  Try again
-                  <ArrowRight size={15} />
-                </button>
-              </div>
-            )}
-            {loading ? (
-              <div
-                className="card-grid"
-                aria-busy="true"
-                aria-label="Loading listings"
-              >
-                {[1, 2, 3, 4].map((value) => (
-                  <div key={value} className="skeleton-card">
-                    <div />
-                    <div />
-                    <div />
-                  </div>
-                ))}
-              </div>
-            ) : filtered.length > 0 ? (
-              <div className="card-grid">
-                {filtered.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    onOpen={() => setSelected(listing.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              !error && (
-                <div className="empty-state">
-                  <span>
-                    <HandHeart size={34} strokeWidth={1.3} />
-                  </span>
-                  <h3>
-                    {tab === "activity" && myCount === 0
-                      ? "Your first connection starts here"
-                      : "A little quiet in this corner"}
-                  </h3>
-                  <p>
-                    {tab === "activity" && myCount === 0
-                      ? "Post a listing or accept a neighbour’s offer to see it here."
-                      : "Try another search or category, or start a listing of your own."}
-                  </p>
-                  <button
-                    className="secondary-button"
-                    onClick={() => {
-                      if (query || filter !== "all" || category !== "all") {
-                        setQuery("");
-                        setFilter("all");
-                        setCategory("all");
-                      } else setCreating(true);
-                    }}
-                  >
-                    {query || filter !== "all" || category !== "all"
-                      ? "Clear filters"
-                      : "Create a listing"}
-                    <ArrowRight size={17} />
-                  </button>
-                </div>
-              )
-            )}
-            <div className="feed-footer">
-              <span>✳</span>
-              <p>Good things grow when neighbours lend a hand.</p>
-            </div>
-          </section>
-        </div>
-        <footer className="site-footer">
-          <span className="footer-brand">tolong.</span>
-          <p>
-            A university hackathon prototype. All residents, listings, and
-            places are fictional.
-            <br />
-            Shared demo data is stored in Supabase. Tolong connects
-            residents; it does not employ or insure them.
-          </p>
-          <span className="footer-note">
-            Made for a little more togetherness.
-          </span>
-        </footer>
-      </main>
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        <button
-          aria-current={tab === "feed" ? "page" : undefined}
-          onClick={() => changeTab("feed")}
-        >
-          <LayoutGrid size={20} />
-          Neighbourhood
-        </button>
-        <button
-          className="mobile-post"
-          disabled={loading}
-          onClick={() => setCreating(true)}
-        >
-          <Plus size={24} />
-          <span>Post</span>
-        </button>
-        <button
-          aria-current={tab === "activity" ? "page" : undefined}
-          onClick={() => changeTab("activity")}
-        >
-          <HeartHandshake size={20} />
-          My activity
-        </button>
-        <button onClick={() => setRewardsOpen(true)}>
-          <Gift size={20} />
-          Rewards
-        </button>
-      </nav>
+      {/* Screen: New Post */}
       {creating && (
         <CreateListing
           onClose={() => setCreating(false)}
-          onCreated={(listing) => {
+          onCreated={(newListing) => {
             setCreating(false);
-            changeTab("activity");
-            setNotice("Your listing is live in the demo neighbourhood.");
+            setNotice("Your listing is live in the township.");
+            setTab("activity");
             void refresh();
-            setSelected(listing.id);
+            setSelectedId(newListing.id);
+            setSelectedQrMode("scan");
           }}
         />
       )}
-      {selected && (
+
+      {/* Screen: Listing Details */}
+      {selectedId && !creating && (
         <ListingDetail
-          key={selected}
-          id={selected}
-          onClose={() => setSelected(null)}
+          id={selectedId}
+          initialQrMode={selectedQrMode}
+          onClose={() => {
+            setSelectedId(null);
+            setSelectedQrMode(null);
+          }}
           onAccepted={() => {
             void refresh();
           }}
         />
       )}
-      {rewardsOpen && <RewardsPanel onClose={() => setRewardsOpen(false)} />}
-    </>
+
+      {/* Main Flow Pages (Tab-based) */}
+      {!creating && !selectedId && (
+        <div className="sdp-screen-container">
+          {/* TAB 1: EXACT CLAUDE DESIGN HOMEPAGE */}
+          {tab === "home" && (
+            <div className="sdp-homepage-view" id="main-home">
+              {/* Sime Darby Top Gradient Backing */}
+              <div className="sdp-home-header-bg" />
+
+              {/* Main Feed Content Area */}
+              <div className="sdp-home-layout">
+                {/* Header Group */}
+                <header className="sdp-header-titles">
+                  <h1 className="sdp-h1-title">Help a neighbour</h1>
+                  {/* Accessible heading for E2E tests */}
+                  <h2 className="sr-only">Around the neighbourhood</h2>
+                  <div className="sdp-precinct-subtitle">
+                    {feed?.resident.area || "Demo Township · Precinct 3"}
+                  </div>
+                </header>
+
+                {/* Filter Pills Row */}
+                <div
+                  className="sdp-filter-pills-container"
+                  role="group"
+                  aria-label="Filter by type"
+                >
+                  {(
+                    [
+                      ["all", "All"],
+                      ["request", "Requests"],
+                      ["offer", "Offers"],
+                      ["lend", "Lend"],
+                    ] as const
+                  ).map(([val, label]) => (
+                    <button
+                      key={val}
+                      aria-pressed={filter === val}
+                      className={`sdp-pill-button ${
+                        filter === val ? "selected" : ""
+                      }`}
+                      onClick={() => setFilter(val)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Optional notification toast */}
+                {notice && (
+                  <div className="sdp-notice-banner" role="status">
+                    <span>{notice}</span>
+                    <button onClick={() => setNotice("")} aria-label="Dismiss">
+                      <X size={15} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Loading Skeleton State */}
+                {loading && (
+                  <div className="sdp-feed-cards-stack" role="status" aria-busy="true">
+                    {[1, 2, 3].map((n) => (
+                      <div key={n} className="sdp-home-card skeleton-card">
+                        <div className="sk-row">
+                          <div className="sk sk-chip" />
+                          <div className="sk sk-badge" />
+                        </div>
+                        <div className="sk sk-title" />
+                        <div className="sk sk-meta" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error State */}
+                {!loading && error && (
+                  <div className="sdp-error-screen" role="alert">
+                    <h2 className="sdp-state-title">Couldn’t load posts</h2>
+                    <p className="sdp-state-sub">Check your connection and try again.</p>
+                    <button
+                      className="sdp-btn-gradient"
+                      onClick={() => void refresh()}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && !error && filteredFeed.length === 0 && (
+                  <div className="sdp-empty-screen">
+                    <h2 className="sdp-state-title">No posts nearby yet</h2>
+                    <p className="sdp-state-sub">
+                      Be the first to ask for help or offer something to your neighbours.
+                    </p>
+                    <button
+                      className="sdp-btn-gradient"
+                      onClick={() => setCreating(true)}
+                    >
+                      Post something
+                    </button>
+                  </div>
+                )}
+
+                {/* Feed Cards List (Exact match to screenshot) */}
+                {!loading && !error && filteredFeed.length > 0 && (
+                  <main className="sdp-feed-cards-stack">
+                    {filteredFeed.map((item) => (
+                      <ListingCard
+                        key={item.id}
+                        listing={item}
+                        onOpen={() => setSelectedId(item.id)}
+                      />
+                    ))}
+                  </main>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: MY ACTIVITY */}
+          {tab === "activity" && (
+            <div className="sdp-feed-view" role="region" aria-label="My Activity">
+              <header className="sdp-screen-band activity-band">
+                <div className="sdp-band-header">
+                  <h1 className="sdp-band-title">My activity</h1>
+                </div>
+              </header>
+
+              <main className="sdp-feed-body">
+                {/* Section 1: My Requests */}
+                <div className="sdp-activity-section">
+                  <h2 className="sdp-section-heading">My requests</h2>
+                  {myRequests.length === 0 ? (
+                    <div className="sdp-card text-center py-6 text-stone-500 text-xs">
+                      You haven’t posted any requests yet.
+                    </div>
+                  ) : (
+                    myRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className="sdp-card cursor-pointer"
+                        onClick={async () => {
+                          if (req.status === "open") {
+                            try {
+                              await api<unknown>(
+                                `/api/listings/${req.id}/simulate-accept`,
+                                { method: "POST", body: "{}" },
+                              );
+                              void refresh();
+                            } catch {
+                              // ignore
+                            }
+                          }
+                          setSelectedId(req.id);
+                          setSelectedQrMode("scan");
+                        }}
+                      >
+                        <div className="sdp-card-top">
+                          <span className="sdp-pill-tag bg-red-100 text-red-700">
+                            Request · {req.category}
+                          </span>
+                          <span className="sdp-pill-tag bg-yellow-400 text-stone-900 font-bold">
+                            {req.status === "completed"
+                              ? "Completed"
+                              : "Accepted"}
+                          </span>
+                        </div>
+                        <h3 className="sdp-card-title mt-2">{req.title}</h3>
+                        <p className="text-xs text-stone-500 mt-1">
+                          {req.status === "completed"
+                            ? "Handover completed"
+                            : "Ben is helping · Handover pending"}
+                        </p>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            className="sdp-btn-yellow text-xs flex-1 justify-center py-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(req.id);
+                              setSelectedQrMode("scan");
+                            }}
+                          >
+                            Scan QR (Handover)
+                          </button>
+                          <button
+                            className="sdp-btn-dark-pill text-xs flex-1 justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(req.id);
+                              setSelectedQrMode("show");
+                            }}
+                          >
+                            Show QR code
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Section 2: My Tasks */}
+                <div className="sdp-activity-section mt-6">
+                  <h2 className="sdp-section-heading">My tasks</h2>
+                  {myTasks.length === 0 ? (
+                    <div className="sdp-card text-center py-6 text-stone-500 text-xs">
+                      You haven’t accepted any neighbour tasks yet.
+                    </div>
+                  ) : (
+                    myTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="sdp-card cursor-pointer"
+                        onClick={() => {
+                          setSelectedId(task.id);
+                          setSelectedQrMode(null);
+                        }}
+                      >
+                        <div className="sdp-card-top">
+                          <span className="sdp-pill-tag bg-yellow-100 text-stone-900">
+                            Helping with · {task.category}
+                          </span>
+                          <span className="sdp-pill-tag bg-yellow-400 text-stone-900 font-bold">
+                            {task.status === "completed"
+                              ? "Done"
+                              : "In progress"}
+                          </span>
+                        </div>
+                        <h3 className="sdp-card-title mt-2">{task.title}</h3>
+                        <p className="text-xs text-stone-500 mt-1">
+                          {task.timing} · +{task.pointsReward} pts
+                        </p>
+                        {task.status !== "completed" && (
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              className="sdp-btn-yellow text-xs px-4 py-2 flex-1 justify-center"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(task.id);
+                                setSelectedQrMode("scan");
+                              }}
+                            >
+                              Scan QR at handover
+                            </button>
+                            <button
+                              className="sdp-btn-dark-pill text-xs px-4 py-2 flex-1 justify-center"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(task.id);
+                                setSelectedQrMode("show");
+                              }}
+                            >
+                              Show QR
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </main>
+            </div>
+          )}
+
+          {/* TAB 3: REWARDS */}
+          {tab === "rewards" && <RewardsPanel isScreen={true} />}
+
+          {/* TAB 4: PROFILE */}
+          {tab === "profile" && (
+            <ProfilePanel resident={feed?.resident} onSignOut={onSignOut} />
+          )}
+
+          {/* Bottom Frosted Blur Shield (Keeps content under tab bar blurred and impossible to see through) */}
+          <div className="sdp-bottom-blur-scrim" aria-hidden="true" />
+
+          {/* FLOATING CURVED BOTTOM TAB BAR (Exact Match to Claude Design) */}
+          <nav className="sdp-bottom-nav-bar" aria-label="Mobile navigation">
+            {/* 1. Home */}
+            <button
+              className={`sdp-nav-item ${tab === "home" ? "active" : ""}`}
+              onClick={() => setTab("home")}
+              aria-current={tab === "home" ? "page" : undefined}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
+              </svg>
+              <span>Home</span>
+            </button>
+
+            {/* 2. Activity */}
+            <button
+              className={`sdp-nav-item ${tab === "activity" ? "active" : ""}`}
+              onClick={() => setTab("activity")}
+              aria-current={tab === "activity" ? "page" : undefined}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+              </svg>
+              <span>Activity</span>
+            </button>
+
+            {/* 3. Center Raised Yellow Post Button */}
+            <button
+              className="sdp-nav-post-button"
+              onClick={() => setCreating(true)}
+              aria-label="Post to your neighbourhood"
+            >
+              <span className="sdp-post-circle-icon">
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
+              <span className="sdp-post-text">Post</span>
+            </button>
+
+            {/* 4. Rewards */}
+            <button
+              className={`sdp-nav-item ${tab === "rewards" ? "active" : ""}`}
+              onClick={() => setTab("rewards")}
+              aria-current={tab === "rewards" ? "page" : undefined}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z" />
+              </svg>
+              <span>Rewards</span>
+            </button>
+
+            {/* 5. Profile */}
+            <button
+              className={`sdp-nav-item ${tab === "profile" ? "active" : ""}`}
+              onClick={() => setTab("profile")}
+              aria-current={tab === "profile" ? "page" : undefined}
+            >
+              <span className="sdp-profile-circle-silhouette">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="9" r="4.5" />
+                  <path d="M3 24a9 9 0 0 1 18 0z" />
+                </svg>
+              </span>
+              <span>Profile</span>
+            </button>
+          </nav>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,33 +1,28 @@
-import {
-  ArrowUpRight,
-  Clock3,
-  HandHeart,
-  MapPin,
-  PackageOpen,
-  Sprout,
-  Wrench,
-  ShoppingBasket,
-  Laptop,
-  Check,
-} from "lucide-react";
-import { type Listing, type Category, typeLabels } from "@/lib/types";
+"use client";
 
-export function CategoryIcon({
-  category,
-  size = 24,
-}: {
-  category: Category;
-  size?: number;
-}) {
-  const Icon =
-    {
-      Errands: HandHeart,
-      "Food & groceries": ShoppingBasket,
-      "Skills & tech": Laptop,
-      "Home & garden": Sprout,
-      "Borrow & lend": Wrench,
-    }[category] || PackageOpen;
-  return <Icon size={size} strokeWidth={1.6} aria-hidden="true" />;
+import type { Listing, ListingType } from "@/lib/types";
+
+function typeBadgeStyle(type: ListingType, category: string) {
+  // Normalize display category name (e.g. "Food & groceries" -> "Groceries", "Skills & tech" -> "Tech help", "Borrow & lend" -> "Tools")
+  let cat = category;
+  if (category === "Food & groceries") cat = "Groceries";
+  else if (category === "Skills & tech") cat = "Tech help";
+  else if (category === "Borrow & lend") cat = "Tools";
+
+  switch (type) {
+    case "request":
+      return { bg: "#FDE3E6", text: "#C8102E", label: `Request · ${cat}` };
+    case "offer":
+      return { bg: "#FFF1C2", text: "#1B1416", label: `Offer · ${cat}` };
+    case "lend":
+      return { bg: "#E3DEDC", text: "#1B1416", label: `Lend · ${cat}` };
+  }
+}
+
+function formatPoints(type: ListingType, reward?: number) {
+  if (type === "offer") return "Free";
+  const pts = reward || 20;
+  return `+${pts} pts`;
 }
 
 export function ListingCard({
@@ -37,64 +32,49 @@ export function ListingCard({
   listing: Listing;
   onOpen: () => void;
 }) {
-  const statusLabel = {
-    open: "Open to neighbours",
-    accepted: "Accepted",
-    awaiting_confirmation: "Awaiting QR confirmation",
-    completed: "Completed",
-    cancelled: "Cancelled",
-  }[listing.status];
+  const badge = typeBadgeStyle(listing.type, listing.category);
+  const pointsText = formatPoints(listing.type, listing.pointsReward);
+
   return (
     <article
-      className={`listing-card ${listing.status !== "open" ? "is-accepted" : ""}`}
+      className="sdp-home-card"
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
     >
-      <div className="card-top">
-        <div className={`category-icon ${listing.type}`}>
-          <CategoryIcon category={listing.category} />
-        </div>
-        <span className={`type-badge ${listing.type}`}>
-          {typeLabels[listing.type]}
+      {/* Top chips row */}
+      <div className="sdp-card-top-chips">
+        <span
+          className="sdp-card-pill-tag"
+          style={{ backgroundColor: badge.bg, color: badge.text }}
+        >
+          {badge.label}
         </span>
+        <span className="sdp-card-points-badge">{pointsText}</span>
       </div>
-      <span className="eyebrow card-category">{listing.category}</span>
-      <h3>
-        <button className="card-title-button" onClick={onOpen}>
+
+      {/* Title */}
+      <h3 className="sdp-card-title-text">
+        <button
+          className="sdp-card-title-interactive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen();
+          }}
+        >
           {listing.title}
         </button>
       </h3>
-      <p className="card-description">{listing.description}</p>
-      <div className="card-meta">
-        <span>
-          <MapPin size={14} />
-          {listing.area}
-        </span>
-        <span>
-          <Clock3 size={14} />
-          {listing.timing}
-        </span>
-      </div>
-      <div className="card-bottom">
-        <span
-          className={
-            listing.status !== "open" ? "status matched" : "status"
-          }
-        >
-          {listing.status !== "open" ? (
-            <>
-              <Check size={13} />
-              {statusLabel}
-            </>
-          ) : (
-            <>
-              <i />
-              {statusLabel}
-            </>
-          )}
-        </span>
-        <button className="text-button" onClick={onOpen}>
-          {listing.isOwner ? "Your listing" : "View details"}
-          <ArrowUpRight size={17} />
-        </button>
+
+      {/* Subtitle: Area & Timing */}
+      <div className="sdp-card-subtitle-text">
+        {listing.area} · {listing.timing}
       </div>
     </article>
   );

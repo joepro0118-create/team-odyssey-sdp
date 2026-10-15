@@ -24,3 +24,12 @@ These are demo placeholders, not claims that the whole team approved branding, d
 - 2026-10-12: Do not assign point values, reward inventory, confirmation methods, real identities, or final Supabase table designs in this contribution.
 - 2026-10-12: Defer the shared inclusion module until the core loop and team integrations work.
 - 2026-10-14: Selectively integrate Emma's login UI and Google PKCE flow into the working Supabase branch. Share one cookie-backed session; retain authenticated API routes, RLS and trusted database functions. Keep email demo signup. Do not reintroduce per-tab demo identities.
+
+## Design overhaul (Member 5 Claude Design)
+
+- 2026-10-15: Adopt official Sime Darby Property brand styling from `docs/design/concept.html` (90% fidelity target). Palette: `#C8102E` (Red), `#E8602A` (Orange), `#FFC72C` (Yellow/Gold), `#1B1416` (Charcoal ink), `#6B6063` (Muted), `#EFEDEB` (Warm grey page background). Montserrat typography. Curved 20px/28px cards and pill buttons.
+- 2026-10-15: Convert modal-based screens to mobile-first full-screen views with floating curved bottom tab bar: Home, Activity, Post (raised yellow button), Rewards, Profile.
+- 2026-10-15: Retain trusted server-side QR verification flow (helper generates temporary QR, requester scans QR) matching Supabase RPC.
+- 2026-10-15: Show 'Verified resident' badge and avatar on request details before acceptance; full unit and contact details shared only after acceptance.
+- 2026-10-15: Implement in-app task coordination chat per `docs/TASK_COORDINATION_CHAT.md` for accepted task participants.
+- 2026-10-15: Add "Medicine (OTC)" category with guardrails against prescription drug requests per AGENTS.md.

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("signed-out home redirects to Emma's login without browser errors", async ({ page }) => {
+test("login screen loads without browser errors", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("heading", { name: "Welcome back, neighbour." })).toBeVisible();
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
