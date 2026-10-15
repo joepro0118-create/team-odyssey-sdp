@@ -42,18 +42,12 @@ export function ListingDetail({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [showProgress, setShowProgress] = useState(false);
-  const [qrMode, setQrMode] = useState<"show" | "scan">(
-    initialQrMode || "show",
-  );
+  const [showProgress, setShowProgress] = useState(Boolean(initialQrMode));
   const [chatOpen, setChatOpen] = useState(false);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    if (initialQrMode) {
-      setQrMode(initialQrMode);
-      setShowProgress(true);
-    }
+    if (initialQrMode) setShowProgress(true);
   }, [initialQrMode]);
 
   useEffect(() => {
@@ -72,7 +66,6 @@ export function ListingDetail({
               .then((updated) => setListing(updated))
               .catch(() => {});
           }
-          setQrMode("scan");
           setShowProgress(true);
         }
       })
@@ -96,7 +89,6 @@ export function ListingDetail({
       setListing(updated);
       setConfirming(false);
       onAccepted();
-      setQrMode("scan");
       setShowProgress(true);
     } catch (err) {
       // In simulated preview or demo mode, fallback to simulation if accept fails
@@ -107,7 +99,6 @@ export function ListingDetail({
         });
         setListing(fallback);
         onAccepted();
-        setQrMode("scan");
         setShowProgress(true);
       } catch {
         setError(errorMessage(err));
@@ -122,7 +113,6 @@ export function ListingDetail({
     return (
       <ProgressScreen
         listing={listing}
-        initialMode={qrMode || "scan"}
         onBack={() => {
           if (listing.isOwner) {
             onClose();
@@ -283,27 +273,25 @@ export function ListingDetail({
               </div>
 
               <div className="accepted-btns-row">
-                <button
-                  className="sdp-btn-gradient flex-1"
-                  onClick={() => {
-                    setQrMode("scan");
-                    setShowProgress(true);
-                  }}
-                >
-                  <QrCode size={16} />
-                  Scan QR
-                </button>
+                {listing.viewerRole === "requester" && (
+                  <button
+                    className="sdp-btn-gradient flex-1"
+                    onClick={() => setShowProgress(true)}
+                  >
+                    <QrCode size={16} />
+                    Scan helper’s QR
+                  </button>
+                )}
 
-                <button
-                  className="sdp-btn-yellow flex-1"
-                  onClick={() => {
-                    setQrMode("show");
-                    setShowProgress(true);
-                  }}
-                >
-                  <QrCode size={16} />
-                  Show QR
-                </button>
+                {listing.viewerRole === "helper" && (
+                  <button
+                    className="sdp-btn-yellow flex-1"
+                    onClick={() => setShowProgress(true)}
+                  >
+                    <QrCode size={16} />
+                    Show QR
+                  </button>
+                )}
 
                 <button
                   className="sdp-btn-dark-pill"
@@ -348,10 +336,7 @@ export function ListingDetail({
               {listing.isOwner && (
                 <button
                   className="sdp-btn-secondary full-width text-xs font-bold mt-2"
-                  onClick={() => {
-                    setQrMode("scan");
-                    setShowProgress(true);
-                  }}
+                  onClick={() => setShowProgress(true)}
                 >
                   View Handover & QR (Diagram 2)
                 </button>

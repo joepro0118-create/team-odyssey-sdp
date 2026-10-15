@@ -1,10 +1,39 @@
 import { DemoMarketplace, MarketplaceError } from "./marketplace-service";
-import { residentIds, type ResidentId } from "./types";
+import { residentIds, type ResidentId, type Reward } from "./types";
 
 /** A fictional sandbox for one browser tab, never a shared or trusted backend. */
 export function createBrowserPreview() {
   const store = new DemoMarketplace();
   let resident: ResidentId = "resident-a";
+  let pointsBalance = 140;
+  const demoRewards: Reward[] = [
+    {
+      id: "10000000-0000-4000-8000-000000000001",
+      title: "Community Café Drink",
+      description:
+        "Demo reward for one drink at the fictional community café.",
+      pointsCost: 100,
+      stock: 20,
+      isDemo: true,
+    },
+    {
+      id: "10000000-0000-4000-8000-000000000002",
+      title: "Sports Court Pass",
+      description:
+        "Demo reward for one fictional township sports court session.",
+      pointsCost: 200,
+      stock: 10,
+      isDemo: true,
+    },
+    {
+      id: "10000000-0000-4000-8000-000000000003",
+      title: "Family Activity Pass",
+      description: "Demo reward for one fictional township family activity.",
+      pointsCost: 300,
+      stock: 5,
+      isDemo: true,
+    },
+  ];
   const messagesStore: Record<
     string,
     Array<{
@@ -50,7 +79,35 @@ export function createBrowserPreview() {
       };
     } else if (path === "/api/listings" && method === "POST") {
       result = store.create(input, resident);
-    } else if (path === "/api/tasks/confirm" && method === "POST") {
+    } else if (path === "/api/rewards" && method === "GET") {
+      result = {
+        balance: pointsBalance,
+        rewards: demoRewards.map((reward) => ({ ...reward })),
+      };
+    } else if (method === "POST") {
+      const redeemMatch = /^\/api\/rewards\/([^/]+)\/redeem$/.exec(path);
+      if (redeemMatch) {
+        const reward = demoRewards.find((item) => item.id === redeemMatch[1]);
+        if (!reward) throw new MarketplaceError("Reward is unavailable.", 404);
+        if (reward.stock < 1)
+          throw new MarketplaceError("Reward is out of stock.", 409);
+        if (pointsBalance < reward.pointsCost)
+          throw new MarketplaceError("Insufficient points.", 409);
+        reward.stock -= 1;
+        pointsBalance -= reward.pointsCost;
+        result = {
+          id: `redemption-${Date.now()}`,
+          rewardId: reward.id,
+          pointsSpent: reward.pointsCost,
+          status: "confirmed",
+          createdAt: new Date().toISOString(),
+        };
+      }
+    }
+    if (result !== undefined) {
+      return result as T;
+    }
+    if (path === "/api/tasks/confirm" && method === "POST") {
       const qrToken =
         (input as { qrToken?: string } | null)?.qrToken ?? "demo-token";
       const match = /tolong-qr-([^-]+)/.exec(qrToken);

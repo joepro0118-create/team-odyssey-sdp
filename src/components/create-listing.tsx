@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -40,6 +40,8 @@ export function CreateListing({
   });
   const [points, setPoints] = useState(20);
   const [preview, setPreview] = useState(false);
+  const [areaOpen, setAreaOpen] = useState(false);
+  const areaRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,6 +52,22 @@ export function CreateListing({
     setForm((current) => ({ ...current, [key]: value }));
     setError("");
   }
+
+  useEffect(() => {
+    if (!areaOpen) return;
+    function close(event: MouseEvent) {
+      if (!areaRef.current?.contains(event.target as Node)) setAreaOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setAreaOpen(false);
+    }
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [areaOpen]);
 
   async function publish() {
     setBusy(true);
@@ -137,25 +155,6 @@ export function CreateListing({
                 Your unit number stays private. It will only be revealed to the
                 neighbour who accepts this task.
               </p>
-            </div>
-
-            <div className="sdp-bottom-sheet">
-              <div className="flex gap-3">
-                <button
-                  className="sdp-btn-secondary"
-                  disabled={busy}
-                  onClick={() => setPreview(false)}
-                >
-                  Edit details
-                </button>
-                <button
-                  className="sdp-btn-yellow flex-1"
-                  disabled={busy}
-                  onClick={() => void publish()}
-                >
-                  {busy ? "Posting..." : "Post to neighbourhood"}
-                </button>
-              </div>
             </div>
           </div>
         ) : (
@@ -279,7 +278,7 @@ export function CreateListing({
             </div>
 
             {/* When & Where card */}
-            <div className="sdp-card p-0 overflow-hidden">
+            <div className="sdp-card p-0 area-card">
               <div className="sdp-row-item">
                 <div className="flex-1">
                   <div className="sdp-meta-tiny">WHEN</div>
@@ -292,22 +291,43 @@ export function CreateListing({
                 </div>
                 <ChevronRight size={18} className="text-stone-400" />
               </div>
-              <div className="sdp-row-item border-t border-stone-200">
+              <div className="sdp-row-item border-t border-stone-200 area-row" ref={areaRef}>
                 <div className="flex-1">
                   <div className="sdp-meta-tiny">WHERE</div>
-                  <select
-                    value={form.area}
-                    onChange={(e) => update("area", e.target.value)}
-                    className="sdp-inline-select"
+                  <button
+                    type="button"
+                    className="area-trigger"
+                    aria-expanded={areaOpen}
+                    aria-haspopup="listbox"
+                    onClick={() => setAreaOpen((open) => !open)}
                   >
-                    {areas.map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
+                    {form.area}
+                  </button>
                 </div>
-                <ChevronRight size={18} className="text-stone-400" />
+                <ChevronRight
+                  size={18}
+                  className={`area-chevron${areaOpen ? " open" : ""}`}
+                />
+                {areaOpen && (
+                  <ul className="area-menu" role="listbox" aria-label="Where">
+                    {areas.map((area) => (
+                      <li key={area}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={form.area === area}
+                          className={form.area === area ? "is-selected" : ""}
+                          onClick={() => {
+                            update("area", area);
+                            setAreaOpen(false);
+                          }}
+                        >
+                          {area}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
 
@@ -354,6 +374,27 @@ export function CreateListing({
           </form>
         )}
       </div>
+
+      {preview && (
+        <div className="sdp-bottom-sheet pinned-bottom-sheet review-actions-sheet">
+          <div className="review-actions">
+            <button
+              className="sdp-btn-secondary"
+              disabled={busy}
+              onClick={() => setPreview(false)}
+            >
+              Edit details
+            </button>
+            <button
+              className="sdp-btn-yellow"
+              disabled={busy}
+              onClick={() => void publish()}
+            >
+              {busy ? "Posting..." : "Post to neighbourhood"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -127,6 +127,12 @@ export function RewardsPanel({
             </div>
           )}
 
+          {data && data.rewards.length === 0 && (
+            <p className="sdp-rewards-fineprint">
+              No demo perks are available right now.
+            </p>
+          )}
+
           <div className="sdp-perks-list">
             {data?.rewards.map((reward) => (
               <div className="sdp-card sdp-perk-item" key={reward.id}>

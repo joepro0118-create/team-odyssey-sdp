@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createBrowserPreview } from "../src/lib/browser-preview";
-import { templates, type Listing, type ListingDetail, type FeedResponse } from "../src/lib/types";
+import { templates, type Listing, type ListingDetail, type FeedResponse, type RewardsResponse, type Redemption } from "../src/lib/types";
 
 test("preview can post, switch residents, accept, and view activity within one tab", async () => {
   const api = createBrowserPreview();
@@ -25,6 +25,22 @@ test("each preview tab and reload starts a separate fictional sandbox", async ()
   assert.equal(feed.listings.length, templates.length);
   assert.equal(feed.resident.id, "resident-a");
   await assert.rejects(second(`/api/listings/${listing.id}`), /could not be found/);
+});
+
+test("preview rewards can be listed and redeemed", async () => {
+  const api = createBrowserPreview();
+  const before = await api<RewardsResponse>("/api/rewards");
+  assert.equal(before.balance, 140);
+  assert.equal(before.rewards.length, 3);
+  const drink = before.rewards[0];
+  const redeemed = await api<Redemption>(`/api/rewards/${drink.id}/redeem`, {
+    method: "POST",
+    body: "{}",
+  });
+  assert.equal(redeemed.pointsSpent, drink.pointsCost);
+  const after = await api<RewardsResponse>("/api/rewards");
+  assert.equal(after.balance, 140 - drink.pointsCost);
+  assert.equal(after.rewards[0].stock, drink.stock - 1);
 });
 
 test("preview validation and unsupported actions give useful errors", async () => {

@@ -5,8 +5,8 @@ test("login screen loads without browser errors", async ({ page }) => {
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole("heading", { name: "Welcome back, neighbour." })).toBeVisible();
-  await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tolong" })).toBeVisible();
+  await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -22,10 +22,10 @@ test("login fits mobile and preserves signup and password controls", async ({ pa
   }
   await page.getByRole("button", { name: "Show password", exact: true }).click();
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
-  await page.getByRole("button", { name: "Need a demo account?" }).click();
+  await page.getByRole("button", { name: "Create an account" }).click();
   await expect(page.getByLabel("Anonymous display label")).toBeVisible();
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "new-password");
-  await expect(page.getByRole("button", { name: "Create demo account" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create an account" })).toBeVisible();
 });
 
 test("invalid credentials show a useful error (mocked Auth response)", async ({ page }) => {
@@ -41,10 +41,10 @@ test("invalid credentials show a useful error (mocked Auth response)", async ({ 
     },
     body: JSON.stringify({ code: "invalid_credentials", msg: "Invalid login credentials" }),
   }));
-  await page.getByLabel("Email address", { exact: true }).fill("fictional@tolong-demo.test");
+  await page.getByLabel("Email", { exact: true }).fill("fictional@tolong-demo.test");
   await page.getByLabel("Password", { exact: true }).fill("fictional-test-input");
   await signIn.click();
-  await expect(page.getByRole("region", { name: "Welcome back, neighbour." }).getByRole("alert")).toContainText("don’t match");
+  await expect(page.getByRole("region", { name: /tolong/i }).getByRole("alert")).toContainText("don’t match");
   await expect(signIn).toBeEnabled();
 });
 

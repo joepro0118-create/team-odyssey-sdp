@@ -1,15 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   Check,
-  CheckCircle2,
   Clock,
   Lock,
   MessageSquare,
-  QrCode,
-  ShieldCheck,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { api, errorMessage } from "@/lib/client-api";
@@ -23,20 +20,15 @@ import { TaskChat } from "./task-chat";
 
 export function ProgressScreen({
   listing,
-  initialMode,
   onBack,
   onCompleted,
 }: {
   listing: ListingDetail;
-  initialMode?: "show" | "scan";
   onBack: () => void;
   onCompleted: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<"show" | "scan">(
-    initialMode || "show",
-  );
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(
     null,
   );
@@ -48,60 +40,67 @@ export function ProgressScreen({
   );
 
   const isHelper = listing.viewerRole === "helper";
+  const isRequester = listing.viewerRole === "requester";
   const partnerName =
     listing.contact?.name ||
     (listing.isOwner ? "Ben (fictional resident B)" : "Neighbour");
 
-  async function createQr() {
-    const taskId = listing.assignmentId || listing.id;
+  const createQr = useCallback(async () => {
+    if (!listing.assignmentId) {
+      setError("The handover code is available after a neighbour accepts.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
       const res = await api<ConfirmationResult>(
-        `/api/tasks/${taskId}/confirmation`,
+        `/api/tasks/${listing.assignmentId}/confirmation`,
         { method: "POST", body: "{}" },
       );
       setConfirmation(res);
-    } catch {
-      // Fallback demo token so QR code always renders immediately
-      setConfirmation({
-        qrToken: `tolong-qr-${taskId}-${Date.now().toString(36)}`,
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-      });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // Automatically generate QR code on mount
-  useState(() => {
-    void createQr();
-  });
-
-  async function completeTask(tokenToUse?: string) {
-    const token = (tokenToUse || qrToken).trim();
-    if (!token || busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const result = await api<CompletionResult>("/api/tasks/confirm", {
-        method: "POST",
-        body: JSON.stringify({ qrToken: token }),
-      });
-      setPointsAwarded(result.pointsAwarded || listing.pointsReward || 20);
-      setCompleted(true);
-      onCompleted();
     } catch (err) {
+      setConfirmation(null);
       setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
-  }
+  }, [listing.assignmentId]);
 
-  const handleScan = useCallback((scannedText: string) => {
-    setQrToken(scannedText);
-    void completeTask(scannedText);
-  }, []);
+  useEffect(() => {
+    if (!isHelper || listing.status === "completed") return;
+    void createQr();
+  }, [createQr, isHelper, listing.status]);
+
+  const completeTask = useCallback(
+    async (tokenToUse?: string) => {
+      const token = (tokenToUse || qrToken).trim();
+      if (!token || busy) return;
+      setBusy(true);
+      setError("");
+      try {
+        const result = await api<CompletionResult>("/api/tasks/confirm", {
+          method: "POST",
+          body: JSON.stringify({ qrToken: token }),
+        });
+        setPointsAwarded(result.pointsAwarded || listing.pointsReward || 20);
+        setCompleted(true);
+        onCompleted();
+      } catch (err) {
+        setError(errorMessage(err));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, listing.pointsReward, onCompleted, qrToken],
+  );
+
+  const handleScan = useCallback(
+    (scannedText: string) => {
+      setQrToken(scannedText);
+      void completeTask(scannedText);
+    },
+    [completeTask],
+  );
 
   // Handover Confirmed screen (Screen 06 in design)
   if (completed) {
@@ -223,7 +222,7 @@ export function ProgressScreen({
         <div className="sdp-progress-steps">
           <span className="step-badge active">1</span>
           <span className="step-label">Posted</span>
-          <span className="step-connector active" />
+          <span className="step-connector active flowing" />
           <span className="step-badge active">2</span>
           <span className="step-label">Accepted</span>
           <span className="step-connector pending" />
@@ -236,55 +235,39 @@ export function ProgressScreen({
         {/* Error notification */}
         {error && <div className="sdp-error-banner">{error}</div>}
 
-        {/* QR Mode Switcher: Show QR or Scan QR */}
-        <div className="sdp-qr-toggle-bar">
-          <button
-            className={`sdp-qr-toggle-btn ${mode === "show" ? "active" : ""}`}
-            onClick={() => setMode("show")}
-          >
-            <QrCode size={16} />
-            Show QR Code
-          </button>
-          <button
-            className={`sdp-qr-toggle-btn ${mode === "scan" ? "active" : ""}`}
-            onClick={() => setMode("scan")}
-          >
-            <CheckCircle2 size={16} />
-            Scan QR Code
-          </button>
-        </div>
-
-        {/* Big QR verification card */}
         <div className="sdp-qr-main-card">
-          {mode === "show" ? (
-            /* Show QR Code view */
+          {isHelper ? (
             <div className="qr-helper-box">
-              <div className="generated-qr">
-                <QRCodeSVG
-                  value={
-                    confirmation?.qrToken ||
-                    `tolong-qr-${listing.id}-${Date.now()}`
-                  }
-                  size={190}
-                  level="M"
-                  aria-label="Handover verification QR code"
-                />
-                <div className="qr-expiry-tag">
-                  <Clock size={14} />
-                  <span>
-                    Expires{" "}
-                    {confirmation
-                      ? new Date(confirmation.expiresAt).toLocaleTimeString(
-                          [],
-                          { hour: "2-digit", minute: "2-digit" },
-                        )
-                      : "in 15 mins"}
-                  </span>
+              {confirmation?.qrToken ? (
+                <div className="generated-qr">
+                  <QRCodeSVG
+                    value={confirmation.qrToken}
+                    size={190}
+                    level="M"
+                    aria-label="Handover verification QR code"
+                  />
+                  <div className="qr-expiry-tag">
+                    <Clock size={14} />
+                    <span>
+                      Expires{" "}
+                      {new Date(confirmation.expiresAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="qr-instruction">
+                  {busy
+                    ? "Creating the handover code…"
+                    : "The handover code will appear here."}
+                </p>
+              )}
 
               <p className="qr-instruction">
-                Scan this together at handover to confirm it happened.
+                Show this code to the neighbour who posted the request. They
+                scan it to confirm the handover.
               </p>
 
               <button
@@ -295,8 +278,7 @@ export function ProgressScreen({
                 {busy ? "Refreshing..." : "Refresh QR Code"}
               </button>
             </div>
-          ) : (
-            /* Scan QR Code view */
+          ) : isRequester ? (
             <div className="qr-requester-box">
               <QrScanner onScan={handleScan} />
 
@@ -304,34 +286,27 @@ export function ProgressScreen({
                 <input
                   value={qrToken}
                   onChange={(e) => setQrToken(e.target.value)}
-                  placeholder="Or paste QR token here"
+                  placeholder="Or paste the helper’s QR token"
                   className="sdp-text-input"
                 />
                 <button
                   className="sdp-btn-gradient"
-                  disabled={busy || qrToken.trim().length < 8}
+                  disabled={busy || qrToken.trim().length < 16}
                   onClick={() => void completeTask()}
                 >
                   {busy ? "Confirming..." : "Confirm"}
                 </button>
               </div>
 
-              {/* One-tap Instant Demo Handover confirmation */}
-              <button
-                className="sdp-btn-yellow full-width mt-2"
-                disabled={busy}
-                onClick={() =>
-                  void completeTask(confirmation?.qrToken || "demo-confirmed")
-                }
-              >
-                <CheckCircle2 size={16} />
-                {busy ? "Confirming..." : "Confirm Handover (One-tap Demo)"}
-              </button>
-
               <p className="qr-instruction">
-                Scan your neighbour’s QR code or tap above to confirm handover.
+                Scan the helper’s QR code. Only you can confirm this handover.
               </p>
             </div>
+          ) : (
+            <p className="qr-instruction">
+              The helper shows the QR code, and the neighbour who posted scans
+              it.
+            </p>
           )}
         </div>
 

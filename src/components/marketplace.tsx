@@ -281,28 +281,20 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             ? "Handover completed"
                             : "Ben is helping · Handover pending"}
                         </p>
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            className="sdp-btn-yellow text-xs flex-1 justify-center py-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedId(req.id);
-                              setSelectedQrMode("scan");
-                            }}
-                          >
-                            Scan QR (Handover)
-                          </button>
-                          <button
-                            className="sdp-btn-dark-pill text-xs flex-1 justify-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedId(req.id);
-                              setSelectedQrMode("show");
-                            }}
-                          >
-                            Show QR code
-                          </button>
-                        </div>
+                        {req.status !== "completed" && (
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              className="sdp-btn-yellow text-xs flex-1 justify-center py-2"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(req.id);
+                                setSelectedQrMode("scan");
+                              }}
+                            >
+                              Scan helper’s QR
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
@@ -322,7 +314,9 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                         className="sdp-card cursor-pointer"
                         onClick={() => {
                           setSelectedId(task.id);
-                          setSelectedQrMode(null);
+                          setSelectedQrMode(
+                            task.status === "completed" ? null : "show",
+                          );
                         }}
                       >
                         <div className="sdp-card-top">
@@ -341,16 +335,6 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                         </p>
                         {task.status !== "completed" && (
                           <div className="flex gap-2 mt-3">
-                            <button
-                              className="sdp-btn-yellow text-xs px-4 py-2 flex-1 justify-center"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedId(task.id);
-                                setSelectedQrMode("scan");
-                              }}
-                            >
-                              Scan QR at handover
-                            </button>
                             <button
                               className="sdp-btn-dark-pill text-xs px-4 py-2 flex-1 justify-center"
                               onClick={(e) => {
@@ -376,7 +360,11 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
           {/* TAB 4: PROFILE */}
           {tab === "profile" && (
-            <ProfilePanel resident={feed?.resident} onSignOut={onSignOut} />
+            <ProfilePanel
+              resident={feed?.resident}
+              listings={feed ? feed.listings : undefined}
+              onSignOut={onSignOut}
+            />
           )}
 
           {/* Bottom Frosted Blur Shield (Keeps content under tab bar blurred and impossible to see through) */}
