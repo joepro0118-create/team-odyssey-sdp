@@ -1,5 +1,6 @@
 import { DemoMarketplace, MarketplaceError } from "./marketplace-service";
 import { residentIds, type ResidentId, type Reward } from "./types";
+import { processAssistantRequest, type AssistantMessage } from "./assistant-engine";
 
 /** A fictional sandbox for one browser tab, never a shared or trusted backend. */
 export function createBrowserPreview() {
@@ -79,6 +80,10 @@ export function createBrowserPreview() {
       };
     } else if (path === "/api/listings" && method === "POST") {
       result = store.create(input, resident);
+    } else if (path === "/api/assistant" && method === "POST") {
+      const msgs =
+        (input as { messages?: AssistantMessage[] } | null)?.messages ?? [];
+      result = await processAssistantRequest(msgs);
     } else if (path === "/api/rewards" && method === "GET") {
       result = {
         balance: pointsBalance,

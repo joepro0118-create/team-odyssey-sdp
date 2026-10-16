@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/marketplace.test.ts tests/browser-preview.test.ts",
+    "test": "tsx --test tests/marketplace.test.ts tests/browser-preview.test.ts tests/assistant.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

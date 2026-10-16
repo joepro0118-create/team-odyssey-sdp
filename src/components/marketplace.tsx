@@ -12,6 +12,7 @@ import { ListingDetail } from "./listing-detail";
 import { ListingCard } from "./listing-card";
 import { RewardsPanel } from "./rewards-panel";
 import { ProfilePanel } from "./profile-panel";
+import { TolongAssistant } from "./tolong-assistant";
 
 type Tab = "home" | "activity" | "rewards" | "profile";
 type FilterType = "all" | ListingType;
@@ -483,6 +484,15 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
               <span>Profile</span>
             </button>
           </nav>
+
+          {/* Bilingual AI Assistant for Seniors & Residents */}
+          <TolongAssistant
+            onListingCreated={async () => {
+              await refresh();
+              setNotice("Permintaan bantuan berjaya disiarkan!");
+              window.setTimeout(() => setNotice(""), 4000);
+            }}
+          />
         </div>
       )}
     </div>
