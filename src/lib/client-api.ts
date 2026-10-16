@@ -1,10 +1,20 @@
 import { getSupabaseBrowserClient } from "./supabase-browser";
+import { previewApi } from "./browser-preview";
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const { data: sessionData } =
-    await getSupabaseBrowserClient().auth.getSession();
-  const token = sessionData.session?.access_token;
-  if (!token) throw new Error("Please sign in to continue.");
+  let token: string | undefined;
+  try {
+    const { data: sessionData } =
+      await getSupabaseBrowserClient().auth.getSession();
+    token = sessionData.session?.access_token;
+  } catch {
+    token = undefined;
+  }
+
+  // Preview is only for a signed-out tab. A signed-in call must keep the
+  // server's role checks, including who may show or scan a handover QR.
+  if (!token) return previewApi<T>(path, options);
+
   const response = await fetch(path, {
     ...options,
     cache: "no-store",
@@ -14,18 +24,16 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
-  let responseData: { error?: string } | T;
+  if (response.ok) return (await response.json()) as T;
+
+  let message = "Something went wrong. Please try again.";
   try {
-    responseData = (await response.json()) as { error?: string } | T;
+    const body = (await response.json()) as { error?: unknown };
+    if (typeof body.error === "string" && body.error.trim()) message = body.error;
   } catch {
-    throw new Error("The server could not be reached. Please try again.");
+    // Keep the generic message when the server body is not JSON.
   }
-  if (!response.ok)
-    throw new Error(
-      (responseData as { error?: string }).error ||
-        "Something went wrong. Please try again.",
-    );
-  return responseData as T;
+  throw new Error(message);
 }
 
 export function errorMessage(error: unknown) {

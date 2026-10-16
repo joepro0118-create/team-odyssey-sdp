@@ -1,6 +1,6 @@
 # Feature Specification: Task Coordination Chat
 
-**Status:** Ready to Implement (Pending Team Greenlight)  
+**Status:** Implemented on `zinc`; migration applied to Tolong; phone/browser verification pending
 **Target:** Core Loop In-Person Coordination  
 **Tech:** Supabase PostgreSQL (RLS) + Next.js App Router  
 
@@ -21,55 +21,7 @@ This feature adds a **task-bound, in-app messaging box** directly inside the act
 
 ## 2. Database Schema & RLS Security
 
-### Migration: `docs/supabase/migrations/202610140004_task_coordination_chat.sql`
-
-```sql
--- 1. Create table for task messages
-CREATE TABLE IF NOT EXISTS public.task_messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  task_id UUID NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
-  sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  message TEXT NOT NULL CHECK (char_length(trim(message)) BETWEEN 1 AND 500),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Index for efficient chronological loading
-CREATE INDEX IF NOT EXISTS idx_task_messages_task_id_created 
-  ON public.task_messages(task_id, created_at ASC);
-
--- Enable Row Level Security
-ALTER TABLE public.task_messages ENABLE ROW LEVEL SECURITY;
-
--- 2. RLS Policy: Only task participants can read messages
-CREATE POLICY "Participants can read task messages"
-  ON public.task_messages
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.tasks t
-      JOIN public.listings l ON l.id = t.listing_id
-      WHERE t.id = task_messages.task_id
-        AND (l.owner_id = auth.uid() OR t.helper_id = auth.uid())
-    )
-  );
-
--- 3. RLS Policy: Only task participants can send messages, AND only while task is active
-CREATE POLICY "Participants can send task messages while active"
-  ON public.task_messages
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    sender_id = auth.uid()
-    AND EXISTS (
-      SELECT 1 FROM public.tasks t
-      JOIN public.listings l ON l.id = t.listing_id
-      WHERE t.id = task_messages.task_id
-        AND (l.owner_id = auth.uid() OR t.helper_id = auth.uid())
-        AND t.status IN ('accepted', 'awaiting_confirmation')
-    )
-  );
-```
+Use [`docs/supabase/migrations/202610140004_task_coordination_chat.sql`](supabase/migrations/202610140004_task_coordination_chat.sql) as the source of truth. Messages reference `task_assignments.id`; participation is checked against `task_assignments.helper_id` and `listings.creator_id`. The listing's status controls whether new messages are allowed.
 
 ---
 
@@ -107,17 +59,11 @@ CREATE POLICY "Participants can send task messages while active"
 
 To ensure **Member 5 can easily overhaul the entire UI** without touching backend logic:
 
-### 1. Headless Hook Separation: `src/lib/hooks/use-task-chat.ts`
-All state management, API requests, and message fetching are isolated in a custom hook:
-```ts
-export function useTaskChat(taskId: string) {
-  // Returns { messages, isLocked, busy, error, sendMessage, sendQuickStatus }
-}
-```
-*Benefit: Any developer or designer can completely rewrite or replace the visual component without risking breaks to the chat logic.*
+### 1. Chat state
+The current implementation keeps chat state and API calls in `src/components/task-chat.tsx`. A future visual overhaul can extract these into `src/lib/hooks/use-task-chat.ts` if needed.
 
-### 2. Presentational Component: `src/components/task-chat.tsx`
-- **Plug-and-play:** Consumes `useTaskChat(taskId)`. Can be rendered inside a modal, a slide-up mobile bottom sheet, or an independent mobile page.
+### 2. Chat Component: `src/components/task-chat.tsx`
+- **Current placement:** Rendered from listing detail and progress screens. Its presentation can be changed without changing the server route or database policies.
 - **Overhaul-ready layout:**
   - Message thread display (chat bubbles: self on right, neighbour on left).
   - 1-tap quick action chips (*"On my way"*, *"I've arrived"*, *"5 mins late"*).
@@ -132,11 +78,4 @@ export function useTaskChat(taskId: string) {
 
 ## 5. Ready-to-Execute Implementation Steps
 
-When the team gives the green light, simply prompt:
-> **"Implement task coordination chat from docs/TASK_COORDINATION_CHAT.md"**
-
-The execution sequence will be:
-1. Run SQL migration script `202610140004_task_coordination_chat.sql`.
-2. Add route handler `src/app/api/tasks/[id]/messages/route.ts`.
-3. Create `src/components/task-chat.tsx` and mount inside `src/components/listing-detail.tsx`.
-4. Add styling in `src/app/globals.css`.
+The route, component, and styling are present on `zinc`. The migration was applied to the Tolong Supabase project. Rolled-back database checks confirmed that a helper can insert a message, the requester can read it, and an unrelated account can neither read nor send one. Complete the browser test with signed-in requester and helper accounts before calling the feature done.

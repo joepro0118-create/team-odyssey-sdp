@@ -1,14 +1,20 @@
 export const listingTypes = ["request", "offer", "lend"] as const;
 export type ListingType = (typeof listingTypes)[number];
 export const categories = [
-  "Errands",
   "Food & groceries",
+  "Errands",
+  "Medicine (OTC)",
   "Skills & tech",
+  "Carrying",
   "Home & garden",
   "Borrow & lend",
+  "Company",
 ] as const;
 export type Category = string;
 export const areas = [
+  "Precinct 3",
+  "Precinct 2",
+  "Precinct 4",
   "Community hub",
   "Garden precinct",
   "Lakeside precinct",
@@ -32,6 +38,7 @@ export type ListingInput = {
   description: string;
   area: Area;
   timing: string;
+  pointsReward?: number;
 };
 
 export type Listing = ListingInput & {
@@ -92,6 +99,20 @@ export type RewardsResponse = {
   rewards: Reward[];
 };
 
+export type TaskMessage = {
+  id: string;
+  senderId: string;
+  isSelf: boolean;
+  senderLabel: string;
+  message: string;
+  createdAt: string;
+};
+
+export type TaskChatResponse = {
+  messages: TaskMessage[];
+  isLocked: boolean;
+};
+
 export const typeLabels: Record<ListingType, string> = {
   request: "Needs a hand",
   offer: "Offering help",
@@ -103,21 +124,34 @@ export const templates: (ListingInput & { label: string })[] = [
     label: "Pick up groceries",
     type: "request",
     category: "Food & groceries",
-    title: "A few groceries on your way home?",
+    title: "Need eggs and bread from shop",
     description:
-      "Could a neighbour help collect a small bag of groceries? We can arrange a handover at the community hub.",
-    area: "Community hub",
-    timing: "Today, after 5 pm",
+      "A dozen eggs and a loaf of bread, please. I can pay you back when we meet.",
+    area: "Precinct 3",
+    timing: "Today, before 6 pm",
+    pointsReward: 20,
   },
   {
-    label: "A little tech help",
-    type: "request",
+    label: "Tech help",
+    type: "offer",
     category: "Skills & tech",
-    title: "A hand with my phone settings",
+    title: "Help set up phone or video call",
     description:
-      "I would appreciate some help making the text on my phone easier to read. A short session at the community hub would be lovely.",
-    area: "Community hub",
-    timing: "This weekend",
+      "Happy to help set up phone or video call for any resident who wants a hand with digital settings.",
+    area: "Precinct 3",
+    timing: "Weekends",
+    pointsReward: 0,
+  },
+  {
+    label: "Lend tools",
+    type: "lend",
+    category: "Borrow & lend",
+    title: "Cordless drill available for day",
+    description:
+      "Cordless drill with bit set available to borrow for your home project. Pick up nearby in Precinct 4.",
+    area: "Precinct 4",
+    timing: "Pick up nearby",
+    pointsReward: 10,
   },
   {
     label: "Share a skill",
@@ -138,16 +172,6 @@ export const templates: (ListingInput & { label: string })[] = [
       "I can collect a small grocery order for a neighbour while I am out. Collection and handover can be arranged after accepting.",
     area: "Garden precinct",
     timing: "Tomorrow morning",
-  },
-  {
-    label: "Lend a tool",
-    type: "lend",
-    category: "Borrow & lend",
-    title: "A cordless drill to lend",
-    description:
-      "A drill and basic bit set are available for a small home project. Please return them clean; we can agree on the return time together.",
-    area: "Garden precinct",
-    timing: "Available this weekend",
   },
   {
     label: "Lend garden gear",
