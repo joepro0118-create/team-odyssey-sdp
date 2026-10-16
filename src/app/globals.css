@@ -489,6 +489,12 @@ button {
   background: #EFEDEB;
 }
 
+/* Profile view needs to scroll — override the hidden overflow */
+.sdp-screen-view.profile-view {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .sdp-feed-body {
   flex: 1;
   padding: 16px 20px 100px;
@@ -1686,6 +1692,16 @@ button {
 .profile-view {
   position: relative;
   background: #efedeb;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.profile-view::-webkit-scrollbar {
+  display: none;
 }
 
 .profile-band-bg {
@@ -1703,7 +1719,10 @@ button {
   position: relative;
   z-index: 1;
   gap: 14px;
-  padding: 22px 16px 120px;
+  padding: 22px 16px 100px;
+  display: flex;
+  flex-direction: column;
+  min-height: min-content;
 }
 
 .profile-title {
