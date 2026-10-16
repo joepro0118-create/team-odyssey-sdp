@@ -105,5 +105,25 @@ test("Assistant respects explicit preferredLanguage override", async () => {
   );
   assert.equal(malayOverride.language, "ms");
   assert.ok(malayOverride.reply.includes("draf") || malayOverride.reply.includes("bantuan"));
+
+  // Explicitly set to Chinese
+  const chineseOverride = await processAssistantRequest(
+    [{ role: "user", content: "Can someone lend me a ladder tomorrow?" }],
+    { preferredLanguage: "zh" }
+  );
+  assert.equal(chineseOverride.language, "zh");
+  assert.ok(chineseOverride.reply.includes("起草") || chineseOverride.reply.includes("请求"));
+});
+
+test("detectLanguage recognizes Chinese text and Assistant drafts Chinese proposal", async () => {
+  assert.equal(detectLanguage("请问可以帮我买鸡蛋和面包吗？"), "zh");
+
+  const res = await processAssistantRequest([
+    { role: "user", content: "请问有邻居可以帮忙在楼下杂货店买鸡蛋和面包吗？" },
+  ]);
+  assert.equal(res.language, "zh");
+  assert.ok(res.proposal);
+  assert.equal(res.proposal.category, "Food & groceries");
+  assert.ok(res.proposal.title.includes("杂货") || res.proposal.title.includes("食材"));
 });
 

@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, Bot, CheckCircle, AlertTriangle, HelpCircle } from "lucide-react";
+import {
+  Sparkles,
+  X,
+  Send,
+  Bot,
+  CheckCircle,
+  AlertTriangle,
+  HelpCircle,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
 import type {
   AssistantMessage,
@@ -10,6 +20,98 @@ import type {
   LanguageChoice,
 } from "@/lib/assistant-engine";
 import type { Listing } from "@/lib/types";
+
+function LanguageTranslateIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 3.5a14 14 0 0 0 0 17" />
+      <path d="M12 3.5a14 14 0 0 1 0 17" />
+      <path d="M3.8 9.5h16.4" />
+      <path d="M3.8 14.5h16.4" />
+      <rect
+        x="1.5"
+        y="1.5"
+        width="8.5"
+        height="7.5"
+        rx="2"
+        fill="#ffffff"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <text
+        x="5.75"
+        y="7.2"
+        fontSize="6.5"
+        fontWeight="800"
+        textAnchor="middle"
+        fill="currentColor"
+        stroke="none"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        A
+      </text>
+      <rect
+        x="14"
+        y="15"
+        width="8.5"
+        height="7.5"
+        rx="2"
+        fill="#ffffff"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <text
+        x="18.25"
+        y="20.6"
+        fontSize="6"
+        fontWeight="800"
+        textAnchor="middle"
+        fill="currentColor"
+        stroke="none"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        文
+      </text>
+    </svg>
+  );
+}
+
+const LANG_OPTIONS: { code: LanguageChoice; flag: string; label: string; subtext: string }[] = [
+  {
+    code: "auto",
+    flag: "🌐",
+    label: "Kesan Automatik",
+    subtext: "Auto-detect language",
+  },
+  {
+    code: "ms",
+    flag: "🇲🇾",
+    label: "Bahasa Melayu",
+    subtext: "Melayu rasmi & mesra jiran",
+  },
+  {
+    code: "en",
+    flag: "🇬🇧",
+    label: "English",
+    subtext: "Township mutual aid guide",
+  },
+  {
+    code: "zh",
+    flag: "🇨🇳",
+    label: "中文 (Mandarin)",
+    subtext: "华文邻里互助指南",
+  },
+];
 
 interface TolongAssistantProps {
   onListingCreated?: (listing: Listing) => void;
@@ -21,6 +123,8 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
   const handleClose = () => setIsOpen(false);
 
   const [selectedLang, setSelectedLang] = useState<LanguageChoice>("auto");
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<AssistantMessage[]>([
     {
@@ -45,14 +149,48 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
     }
   }, [messages, isTyping, activeProposal]);
 
+  useEffect(() => {
+    if (!isLangDropdownOpen) return;
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (
+        langDropdownRef.current &&
+        !langDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLangDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsLangDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLangDropdownOpen]);
+
   const handleLanguageChange = (lang: LanguageChoice) => {
     setSelectedLang(lang);
+    setIsLangDropdownOpen(false);
     if (lang === "ms") {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content: "Bahasa Melayu dipilih 🇲🇾. Sila beritahu saya bantuan yang anda perlukan!",
+        },
+      ]);
+    } else if (lang === "zh") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "已选择中文 🇨🇳。请告诉我您需要什么邻里帮助！",
         },
       ]);
     } else if (lang === "en") {
@@ -68,7 +206,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
         ...prev,
         {
           role: "assistant",
-          content: "Mod pengesanan automatik dipilih 🌐. Anda boleh taip dalam Bahasa Melayu atau English!",
+          content: "Mod pengesanan automatik dipilih 🌐. Anda boleh taip dalam Bahasa Melayu, English, atau 中文!",
         },
       ]);
     }
@@ -150,6 +288,13 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
           { label: "🪜 Pinjam tangga", query: "Ada siapa boleh pinjamkan tangga lipat selama sejam?" },
           { label: "🪙 Cara guna mata", query: "Bagaimana sistem mata ganjaran berfungsi?" },
         ]
+      : selectedLang === "zh"
+      ? [
+          { label: "🛒 代买食材杂货", query: "请问有邻居可以帮忙在楼下杂货店买鸡蛋和面包吗？" },
+          { label: "🛠️ 更换厨房灯泡", query: "明天可以请邻居协助更换厨房天花板的高处灯泡吗？" },
+          { label: "🪜 借用家用梯子", query: "有谁可以借折叠梯子用一个小时吗？" },
+          { label: "🪙 社区积分运作", query: "请问 Tolong 社区积分与奖赏是如何运作的？" },
+        ]
       : selectedLang === "en"
       ? [
           { label: "🛒 Buy groceries", query: "Need help picking up eggs and bread from the shop today" },
@@ -205,40 +350,68 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                   <p className="sdp-assistant-subtitle">
                     {selectedLang === "ms"
                       ? "Pembantu Kejiranan Anda"
+                      : selectedLang === "zh"
+                      ? "您的智能邻里小助手"
                       : selectedLang === "en"
                       ? "Your Community Helper"
-                      : "Bilingual Senior & Community Guide"}
+                      : "Multilingual Senior & Community Guide"}
                   </p>
                 </div>
               </div>
 
               <div className="sdp-assistant-header-actions">
-                {/* Language Selector */}
-                <div className="sdp-lang-selector" role="group" aria-label="Pilih bahasa">
+                {/* Language Selector Dropdown */}
+                <div className="sdp-lang-dropdown-wrapper" ref={langDropdownRef}>
                   <button
                     type="button"
-                    className={`sdp-lang-btn ${selectedLang === "auto" ? "active" : ""}`}
-                    onClick={() => handleLanguageChange("auto")}
-                    title="Auto-detect language"
+                    className={`sdp-lang-trigger-btn ${isLangDropdownOpen ? "open" : ""}`}
+                    onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                    title="Pilih Bahasa / Select Language"
+                    aria-label="Pilih Bahasa / Select Language"
+                    aria-expanded={isLangDropdownOpen}
                   >
-                    Auto
+                    <LanguageTranslateIcon className="w-5 h-5 text-emerald-800" />
+                    <span className="sdp-lang-trigger-badge">
+                      {selectedLang === "auto"
+                        ? "Auto"
+                        : selectedLang === "ms"
+                        ? "BM"
+                        : selectedLang === "zh"
+                        ? "中文"
+                        : "EN"}
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-stone-500 transition-transform ${
+                        isLangDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  <button
-                    type="button"
-                    className={`sdp-lang-btn ${selectedLang === "ms" ? "active" : ""}`}
-                    onClick={() => handleLanguageChange("ms")}
-                    title="Bahasa Melayu"
-                  >
-                    BM
-                  </button>
-                  <button
-                    type="button"
-                    className={`sdp-lang-btn ${selectedLang === "en" ? "active" : ""}`}
-                    onClick={() => handleLanguageChange("en")}
-                    title="English"
-                  >
-                    EN
-                  </button>
+
+                  {isLangDropdownOpen && (
+                    <div className="sdp-lang-menu" role="menu">
+                      <div className="sdp-lang-menu-header">Pilih Bahasa / Language</div>
+                      {LANG_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.code}
+                          type="button"
+                          role="menuitem"
+                          className={`sdp-lang-menu-item ${
+                            selectedLang === opt.code ? "selected" : ""
+                          }`}
+                          onClick={() => handleLanguageChange(opt.code)}
+                        >
+                          <span className="sdp-lang-menu-flag">{opt.flag}</span>
+                          <div className="sdp-lang-menu-labels">
+                            <span className="sdp-lang-menu-name">{opt.label}</span>
+                            <span className="sdp-lang-menu-sub">{opt.subtext}</span>
+                          </div>
+                          {selectedLang === opt.code && (
+                            <Check className="w-4 h-4 text-emerald-700 sdp-lang-menu-check" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Font Size Toggle for Seniors */}
@@ -340,6 +513,8 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                       <span>
                         {selectedLang === "en"
                           ? "Successfully posted! Your neighbors can now see your request."
+                          : selectedLang === "zh"
+                          ? "已成功发布！邻居们现在可以查看您的互助请求。"
                           : "Berjaya disiarkan! Permintaan anda kini boleh dilihat oleh jiran."}
                       </span>
                     </div>
@@ -352,12 +527,18 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                         disabled={proposalStatus === "posting"}
                       >
                         {proposalStatus === "posting" ? (
-                          selectedLang === "en" ? "Posting..." : "Menyiarkan..."
+                          selectedLang === "en"
+                            ? "Posting..."
+                            : selectedLang === "zh"
+                            ? "发布中..."
+                            : "Menyiarkan..."
                         ) : (
                           <>
                             <CheckCircle className="w-4 h-4 mr-1 inline" />
                             {selectedLang === "en"
                               ? "Confirm & Post to Community"
+                              : selectedLang === "zh"
+                              ? "确认并发布到社区"
                               : selectedLang === "ms"
                               ? "Sahkan & Siarkan ke Komuniti"
                               : "Sahkan & Siarkan / Confirm & Post"}
@@ -369,7 +550,11 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                         className="sdp-proposal-cancel-btn"
                         onClick={() => setActiveProposal(null)}
                       >
-                        {selectedLang === "en" ? "Cancel" : "Batal"}
+                        {selectedLang === "en"
+                          ? "Cancel"
+                          : selectedLang === "zh"
+                          ? "取消"
+                          : "Batal"}
                       </button>
                     </div>
                   )}
@@ -398,6 +583,8 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                 placeholder={
                   selectedLang === "ms"
                     ? "Taip bantuan anda di sini... (Bahasa Melayu)"
+                    : selectedLang === "zh"
+                    ? "在此输入您的求助内容... (中文)"
                     : selectedLang === "en"
                     ? "Type your request here... (English)"
                     : "Taip bantuan / Type your request..."
@@ -410,7 +597,13 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                 type="submit"
                 className="sdp-assistant-send-btn"
                 disabled={isTyping || !inputText.trim()}
-                aria-label={selectedLang === "en" ? "Send message" : "Hantar mesej"}
+                aria-label={
+                  selectedLang === "en"
+                    ? "Send message"
+                    : selectedLang === "zh"
+                    ? "发送信息"
+                    : "Hantar mesej"
+                }
               >
                 <Send className="w-4 h-4" />
               </button>
