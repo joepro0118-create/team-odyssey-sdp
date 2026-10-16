@@ -30,13 +30,14 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const [isLargeText, setIsLargeText] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
-  }, [messages, isTyping, isOpen, activeProposal]);
+  }, [messages, isTyping, activeProposal]);
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend ?? inputText).trim();
@@ -114,6 +115,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
     <>
       {/* Floating Launcher Button */}
       <button
+        type="button"
         className={`sdp-assistant-floating-btn ${isOpen ? "btn-hidden" : ""}`}
         onClick={handleOpen}
         aria-label="Tolong Assistant"
@@ -189,7 +191,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
             </div>
 
             {/* Message Thread */}
-            <div className="sdp-assistant-messages">
+            <div ref={messagesContainerRef} className="sdp-assistant-messages">
               {messages.map((m, idx) => (
                 <div
                   key={idx}
@@ -275,8 +277,6 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                   <span>{errorMsg}</span>
                 </div>
               )}
-
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar */}
