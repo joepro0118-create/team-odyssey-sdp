@@ -12,21 +12,8 @@ interface TolongAssistantProps {
 
 export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-
-  const handleOpen = () => {
-    setIsClosing(false);
-    setIsOpen(true);
-  };
-
-  const handleClose = () => {
-    if (isClosing) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsClosing(false);
-    }, 280);
-  };
+  const handleOpen = () => setIsOpen(true);
+  const handleClose = () => setIsOpen(false);
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<AssistantMessage[]>([
@@ -136,17 +123,17 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
       </button>
 
       {/* Assistant Modal / Bottom Sheet */}
-      {isOpen && (
+      <div
+        className={`sdp-assistant-overlay ${isOpen ? "open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!isOpen}
+        onClick={handleClose}
+      >
         <div
-          className={`sdp-assistant-overlay ${isClosing ? "closing" : "opening"}`}
-          role="dialog"
-          aria-modal="true"
-          onClick={handleClose}
+          className={`sdp-assistant-card ${isLargeText ? "large-text" : ""}`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            className={`sdp-assistant-card ${isLargeText ? "large-text" : ""} ${isClosing ? "card-closing" : "card-opening"}`}
-            onClick={(e) => e.stopPropagation()}
-          >
             {/* Grab handle for smooth native sheet feel */}
             <div className="sdp-sheet-grab-bar" aria-hidden="true">
               <span className="sdp-sheet-grab-pill" />
@@ -319,7 +306,6 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
             </form>
           </div>
         </div>
-      )}
     </>
   );
 }
