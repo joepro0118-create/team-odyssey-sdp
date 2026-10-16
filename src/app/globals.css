@@ -2194,7 +2194,8 @@ button.profile-row:not(:disabled):active {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 22px rgba(4, 120, 87, 0.35);
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease, box-shadow 0.2s ease;
+  will-change: transform, opacity;
 }
 
 .sdp-assistant-floating-btn:hover {
@@ -2204,19 +2205,60 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-assistant-floating-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
+}
+
+.sdp-assistant-floating-btn.btn-hidden {
+  opacity: 0;
+  transform: scale(0.4) translateY(20px);
+  pointer-events: none;
 }
 
 .sdp-assistant-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  animation: fadeIn 0.2s ease-out;
+  will-change: opacity;
+}
+
+.sdp-assistant-overlay.opening {
+  animation: overlayFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sdp-assistant-overlay.closing {
+  animation: overlayFadeOut 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlayFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.sdp-sheet-grab-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+  padding-bottom: 2px;
+  background: #FAFAF9;
+}
+
+.sdp-sheet-grab-pill {
+  width: 38px;
+  height: 4.5px;
+  border-radius: 999px;
+  background: #D6D3D1;
 }
 
 .sdp-assistant-card {
@@ -2226,9 +2268,35 @@ button.profile-row:not(:disabled):active {
   flex-direction: column;
   height: 82%;
   max-height: 82%;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  animation: slideUp 0.25s ease-out;
+  will-change: transform;
+}
+
+.sdp-assistant-card.card-opening {
+  animation: sheetSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sdp-assistant-card.card-closing {
+  animation: sheetSlideDown 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes sheetSlideUp {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheetSlideDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 .sdp-assistant-header {
