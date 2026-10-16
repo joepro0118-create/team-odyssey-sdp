@@ -12,6 +12,8 @@ export type AssistantMessage = {
   content: string;
 };
 
+export type LanguageChoice = "ms" | "en" | "auto";
+
 export type AssistantProposal = ListingInput;
 
 export type AssistantResponse = {
@@ -48,8 +50,13 @@ export function detectLanguage(text: string): "ms" | "en" {
 export function parseLocalIntent(
   userText: string,
   history: AssistantMessage[] = [],
+  preferredLanguage?: LanguageChoice,
 ): AssistantResponse {
-  const lang = detectLanguage(userText);
+  const detected = detectLanguage(userText);
+  const lang: "ms" | "en" =
+    preferredLanguage === "ms" || preferredLanguage === "en"
+      ? preferredLanguage
+      : detected;
   const text = userText.trim();
 
   // 1. Guardrail: Prescription Drugs
@@ -255,14 +262,21 @@ export function parseLocalIntent(
 // Optional LLM API caller (Google Gemini or OpenAI if configured)
 export async function callExternalLLM(
   messages: AssistantMessage[],
+  preferredLanguage?: LanguageChoice,
 ): Promise<AssistantResponse | null> {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
+  const langPrompt =
+    preferredLanguage === "ms"
+      ? "\nPreferred Language: Bahasa Melayu (Malay). You MUST reply and create proposals in Bahasa Melayu."
+      : preferredLanguage === "en"
+      ? "\nPreferred Language: English. You MUST reply and create proposals in English."
+      : "";
 
   if (geminiKey) {
     try {
       const userPrompt = messages[messages.length - 1]?.content ?? "";
-      const systemPrompt = `You are "Tolong Assistant", a warm, empathetic, bilingual (English and Bahasa Melayu) AI assistant for a township community mutual-aid app developed for Sime Darby Property residents.
+      const systemPrompt = `You are "Tolong Assistant", a warm, empathetic, bilingual (English and Bahasa Melayu) AI assistant for a township community mutual-aid app developed for Sime Darby Property residents.${langPrompt}
 Your role:
 1. Help residents (especially seniors and non-tech users) create requests, offers, or lending listings easily.
 2. Answer questions about Tolong (community points = 50 per task, 15-minute QR handover, safety, rewards).
@@ -372,19 +386,26 @@ Your role:
 // Master assistant function
 export async function processAssistantRequest(
   messages: AssistantMessage[],
+  optionsOrLang?: LanguageChoice | { preferredLanguage?: LanguageChoice },
 ): Promise<AssistantResponse> {
+  const preferredLanguage =
+    typeof optionsOrLang === "string" ? optionsOrLang : optionsOrLang?.preferredLanguage;
   const latestMessage = messages[messages.length - 1];
   if (!latestMessage || !latestMessage.content.trim()) {
+    const lang = preferredLanguage === "ms" ? "ms" : "en";
     return {
-      reply: "Hello! How can I assist you with Tolong today? / Hai! Ada apa-apa yang boleh saya bantu hari ini?",
-      language: "en",
+      reply:
+        lang === "ms"
+          ? "Hai! Ada apa-apa yang boleh saya bantu hari ini?"
+          : "Hello! How can I assist you with Tolong today?",
+      language: lang,
     };
   }
 
   // 1. Try external LLM if API key is configured
-  const llmResult = await callExternalLLM(messages);
+  const llmResult = await callExternalLLM(messages, preferredLanguage);
   if (llmResult) return llmResult;
 
   // 2. Otherwise use the reliable rule-based conversational engine
-  return parseLocalIntent(latestMessage.content, messages);
+  return parseLocalIntent(latestMessage.content, messages, preferredLanguage);
 }

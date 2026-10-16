@@ -2316,6 +2316,37 @@ button.profile-row:not(:disabled):active {
   gap: 8px;
 }
 
+.sdp-lang-selector {
+  display: flex;
+  background: #E5E7EB;
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.sdp-lang-btn {
+  border: 0;
+  background: none;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4B5563;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  line-height: 1.2;
+}
+
+.sdp-lang-btn:hover {
+  color: #111827;
+}
+
+.sdp-lang-btn.active {
+  background: #047857;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 .sdp-font-toggle-btn {
   background: #E5E7EB;
   border: 0;

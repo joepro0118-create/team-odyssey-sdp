@@ -88,3 +88,22 @@ test("Assistant successfully drafts structured proposal for tool lending", async
   assert.equal(res.proposal.category, "Borrow & lend");
   assert.ok(res.proposal.title.length >= 6);
 });
+
+test("Assistant respects explicit preferredLanguage override", async () => {
+  // Explicitly set to English even though query could be ambiguous or Malay
+  const englishOverride = await processAssistantRequest(
+    [{ role: "user", content: "Tolong belikan roti dan telur di kedai petang ini" }],
+    { preferredLanguage: "en" }
+  );
+  assert.equal(englishOverride.language, "en");
+  assert.ok(englishOverride.reply.includes("drafted") || englishOverride.reply.includes("request"));
+
+  // Explicitly set to Malay
+  const malayOverride = await processAssistantRequest(
+    [{ role: "user", content: "Can someone help me change a high lightbulb tomorrow?" }],
+    { preferredLanguage: "ms" }
+  );
+  assert.equal(malayOverride.language, "ms");
+  assert.ok(malayOverride.reply.includes("draf") || malayOverride.reply.includes("bantuan"));
+});
+
