@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { ArrowUp, Sparkles, X } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
 import {
   type FeedResponse,
@@ -30,6 +30,15 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
     null,
   );
   const sequence = useRef(0);
+  // Assistant sheet is opened from the Home prompt bar (or the Post form link).
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantSeed, setAssistantSeed] = useState("");
+  const [promptText, setPromptText] = useState("");
+
+  function openAssistant(seed = "") {
+    setAssistantSeed(seed.trim());
+    setAssistantOpen(true);
+  }
 
   const refresh = useCallback(async () => {
     const reqNum = ++sequence.current;
@@ -82,6 +91,10 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
       {creating && (
         <CreateListing
           onClose={() => setCreating(false)}
+          onAskAssistant={() => {
+            setCreating(false);
+            openAssistant();
+          }}
           onCreated={(newListing) => {
             setCreating(false);
             setNotice("Your listing is live in the township.");
@@ -129,6 +142,39 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                   </div>
                 </header>
 
+                {/* Ryt-style prompt bar: type a need here, or tap to open the assistant */}
+                <form
+                  className="sdp-prompt-bar"
+                  role="search"
+                  aria-label="Ask the Tolong Assistant"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    openAssistant(promptText);
+                    setPromptText("");
+                  }}
+                >
+                  <span className="sdp-prompt-bar-icon" aria-hidden="true">
+                    <Sparkles size={18} />
+                  </span>
+                  <input
+                    id="home-assistant-prompt"
+                    className="sdp-prompt-bar-input"
+                    type="text"
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                    placeholder="Perlukan bantuan? / Need help? Type here…"
+                    aria-label="Describe what you need"
+                    enterKeyHint="send"
+                  />
+                  <button
+                    type="submit"
+                    id="home-assistant-open"
+                    className="sdp-prompt-bar-send"
+                    aria-label="Open Tolong Assistant"
+                  >
+                    <ArrowUp size={18} strokeWidth={2.6} />
+                  </button>
+                </form>
                 {/* Filter Pills Row */}
                 <div
                   className="sdp-filter-pills-container"
@@ -487,6 +533,12 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
           {/* Bilingual AI Assistant for Seniors & Residents */}
           <TolongAssistant
+            isOpen={assistantOpen}
+            initialMessage={assistantSeed}
+            onClose={() => {
+              setAssistantOpen(false);
+              setAssistantSeed("");
+            }}
             onListingCreated={async () => {
               await refresh();
               setNotice("Permintaan bantuan berjaya disiarkan!");

@@ -30,9 +30,12 @@ import { api, errorMessage } from "@/lib/client-api";
 export function CreateListing({
   onClose,
   onCreated,
+  onAskAssistant,
 }: {
   onClose: () => void;
   onCreated: (listing: Listing) => void;
+  /** Hands off to the Tolong Assistant for residents who'd rather describe their need in chat. */
+  onAskAssistant?: () => void;
 }) {
   // Local date strings (ensuring correct local time)
   const now = new Date();
@@ -207,6 +210,19 @@ export function CreateListing({
 
       <div className="sdp-screen-body">
         {error && <div className="sdp-error-banner">{error}</div>}
+
+        {!preview && onAskAssistant && (
+          <button
+            type="button"
+            id="post-ask-assistant"
+            className="sdp-ask-assistant-link"
+            onClick={onAskAssistant}
+          >
+            <Sparkles size={16} aria-hidden="true" />
+            <span>Tak pasti nak tulis apa? / Not sure what to write? Ask the assistant</span>
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        )}
 
         {preview ? (
           /* Step 2: Review & confirm */

@@ -33,3 +33,4 @@ These are demo placeholders, not claims that the whole team approved branding, d
 - 2026-10-15: Show 'Verified resident' badge and avatar on request details before acceptance; full unit and contact details shared only after acceptance.
 - 2026-10-15: Implement in-app task coordination chat per `docs/TASK_COORDINATION_CHAT.md` for accepted task participants.
 - 2026-10-15: Add "Medicine (OTC)" category with guardrails against prescription drug requests per AGENTS.md.
+- 2026-10-16: Open the Tolong Assistant from a Ryt-style prompt bar on Home (typed text becomes the first message) and from a link on the Post form; the floating assistant button is removed.

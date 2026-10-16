@@ -114,13 +114,22 @@ const LANG_OPTIONS: { code: LanguageChoice; flag: string; label: string; subtext
 ];
 
 interface TolongAssistantProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** Text typed into the Home prompt bar; sent as the first message when the sheet opens. */
+  initialMessage?: string;
   onListingCreated?: (listing: Listing) => void;
 }
 
-export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+export function TolongAssistant({
+  isOpen,
+  onClose,
+  initialMessage,
+  onListingCreated,
+}: TolongAssistantProps) {
+  const handleClose = onClose;
+  // Remembers which prompt-bar text we already sent, so re-renders don't send it twice.
+  const sentSeedRef = useRef<string | null>(null);
 
   const [selectedLang, setSelectedLang] = useState<LanguageChoice>("auto");
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
@@ -148,6 +157,19 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
         messagesContainerRef.current.scrollHeight;
     }
   }, [messages, isTyping, activeProposal]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      sentSeedRef.current = null;
+      return;
+    }
+    const seed = initialMessage?.trim();
+    if (seed && sentSeedRef.current !== seed) {
+      sentSeedRef.current = seed;
+      void handleSend(seed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initialMessage]);
 
   useEffect(() => {
     if (!isLangDropdownOpen) return;
@@ -311,19 +333,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
 
   return (
     <>
-      {/* Floating Launcher Button */}
-      <button
-        type="button"
-        className={`sdp-assistant-floating-btn ${isOpen ? "btn-hidden" : ""}`}
-        onClick={handleOpen}
-        aria-label="Tolong Assistant"
-        title="Tolong Assistant"
-      >
-        <Bot className="w-7 h-7 text-white" strokeWidth={2.2} />
-        <span className="sdp-assistant-floating-badge" aria-hidden="true" />
-      </button>
-
-      {/* Assistant Modal / Bottom Sheet */}
+      {/* Assistant Modal / Bottom Sheet (opened from the Home prompt bar or the Post form) */}
       <div
         className={`sdp-assistant-overlay ${isOpen ? "open" : ""}`}
         role="dialog"
@@ -347,7 +357,9 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                   <Bot className="w-5 h-5 text-[#C8102E]" />
                 </div>
                 <div>
-                  <h3 className="sdp-assistant-title">Tolong Assistant</h3>
+                  <h3 className="sdp-assistant-title">
+                    Tolong Assistant <span className="sdp-demo-tag">Demo</span>
+                  </h3>
                   <p className="sdp-assistant-subtitle">
                     {selectedLang === "ms"
                       ? "Pembantu Kejiranan Anda"
