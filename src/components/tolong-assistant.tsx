@@ -114,11 +114,10 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
         <button
           className="sdp-assistant-floating-btn"
           onClick={() => setIsOpen(true)}
-          aria-label="Buka Pembantu Tolong"
+          aria-label="Tolong Assistant"
+          title="Tolong Assistant"
         >
-          <span className="sdp-assistant-pulse" />
-          <Bot className="w-5 h-5 text-emerald-800" />
-          <span className="sdp-assistant-btn-label">Tolong Assistant</span>
+          <Bot className="w-5 h-5 text-emerald-700" />
         </button>
       )}
 
