@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Check,
   Clock,
+  Keyboard,
   Lock,
   MessageSquare,
 } from "lucide-react";
@@ -38,6 +39,7 @@ export function ProgressScreen({
   const [pointsAwarded, setPointsAwarded] = useState(
     listing.pointsReward || 20,
   );
+  const [manualCodeOpen, setManualCodeOpen] = useState(false);
 
   const isHelper = listing.viewerRole === "helper";
   const isRequester = listing.viewerRole === "requester";
@@ -282,25 +284,39 @@ export function ProgressScreen({
             <div className="qr-requester-box">
               <QrScanner onScan={handleScan} />
 
-              <div className="qr-token-input-row">
-                <input
-                  value={qrToken}
-                  onChange={(e) => setQrToken(e.target.value)}
-                  placeholder="Or paste the helper’s QR token"
-                  className="sdp-text-input"
-                />
+              {/* Phone-friendly expandable manual code toggle */}
+              <div className="sdp-manual-code-section">
                 <button
-                  className="sdp-btn-gradient"
-                  disabled={busy || qrToken.trim().length < 16}
-                  onClick={() => void completeTask()}
+                  type="button"
+                  className="sdp-manual-code-toggle"
+                  onClick={() => setManualCodeOpen((v) => !v)}
                 >
-                  {busy ? "Confirming..." : "Confirm"}
+                  <Keyboard size={14} />
+                  <span>
+                    {manualCodeOpen
+                      ? "Hide manual code entry"
+                      : "Can't scan? Enter code manually"}
+                  </span>
                 </button>
-              </div>
 
-              <p className="qr-instruction">
-                Scan the helper’s QR code. Only you can confirm this handover.
-              </p>
+                {manualCodeOpen && (
+                  <div className="qr-token-input-row">
+                    <input
+                      value={qrToken}
+                      onChange={(e) => setQrToken(e.target.value)}
+                      placeholder="Paste helper's QR token"
+                      className="sdp-text-input"
+                    />
+                    <button
+                      className="sdp-btn-gradient"
+                      disabled={busy || qrToken.trim().length < 16}
+                      onClick={() => void completeTask()}
+                    >
+                      {busy ? "Confirming..." : "Confirm"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <p className="qr-instruction">

@@ -1226,7 +1226,574 @@ button {
 .area-card {
   overflow: visible;
   position: relative;
-  z-index: 2;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   Redesigned When & Where Cards (Date, Time, Venue, Neighbourhood)
+   ========================================================================== */
+
+.sdp-when-card,
+.sdp-where-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px !important;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sdp-form-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sdp-form-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sdp-form-header-title .sdp-section-label {
+  margin-bottom: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--sdp-muted);
+  letter-spacing: 0.05em;
+}
+
+.sdp-timing-preview-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c8102e;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
+  border-radius: 9999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.sdp-selector-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.sdp-selector-sublabel {
+  font-size: 10px;
+  font-weight: 800;
+  color: #8c827a;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Horizontal Scrollable Date Strip */
+.sdp-date-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 2px 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sdp-date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.sdp-date-card {
+  flex: 0 0 62px;
+  min-width: 62px;
+  height: 72px;
+  border-radius: 14px;
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.sdp-date-card:hover {
+  background: #f2eeec;
+  border-color: #d6ceca;
+}
+
+.sdp-date-card.selected {
+  background: #1b1416;
+  border-color: #1b1416;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(27, 20, 22, 0.22);
+  transform: translateY(-1px);
+}
+
+.sdp-date-card-day {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8c827a;
+  text-transform: uppercase;
+}
+
+.sdp-date-card.selected .sdp-date-card-day {
+  color: #ffc72c; /* Gold accent on active dark card */
+}
+
+.sdp-date-card-num {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1b1416;
+  line-height: 1.1;
+}
+
+.sdp-date-card.selected .sdp-date-card-num {
+  color: #ffffff;
+}
+
+.sdp-date-card-month {
+  font-size: 10px;
+  font-weight: 600;
+  color: #8c827a;
+}
+
+.sdp-date-card.selected .sdp-date-card-month {
+  color: #e5e0de;
+}
+
+/* Inline Monthly Calendar Dropdown */
+.sdp-inline-calendar {
+  background: #ffffff;
+  border: 1.5px solid #e3dedc;
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sdp-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sdp-cal-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1b1416;
+}
+
+.sdp-cal-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #e5e0de;
+  background: #faf8f7;
+  color: #4a3e3d;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.sdp-cal-nav-btn:hover {
+  background: #1b1416;
+  color: #ffffff;
+  border-color: #1b1416;
+}
+
+.sdp-cal-selects {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sdp-cal-select {
+  border: 1.5px solid #e3dedc;
+  background: #faf8f7;
+  color: #1b1416;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.sdp-cal-select:hover {
+  border-color: #c8102e;
+  background: #ffffff;
+}
+
+.sdp-cal-select:focus {
+  border-color: #c8102e;
+  box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.12);
+  background: #ffffff;
+}
+
+.sdp-cal-today-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c8102e;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
+  border-radius: 8px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.sdp-cal-today-btn:hover {
+  background: #c8102e;
+  color: #ffffff;
+}
+
+.sdp-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.sdp-cal-weekday {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8c827a;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.sdp-cal-day {
+  height: 34px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b1416;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.sdp-cal-day:hover:not(:disabled) {
+  background: #f0ece9;
+}
+
+.sdp-cal-day.is-selected {
+  background: #c8102e;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.sdp-cal-day:disabled {
+  color: #d6ceca;
+  cursor: not-allowed;
+}
+
+.sdp-cal-day.empty {
+  visibility: hidden;
+}
+
+.sdp-styled-date-picker {
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b1416;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Modern Date & Time Selection (Quick-Select Cards + 12h Dropdowns)
+   ========================================================================== */
+
+/* Quick Date Pills Row */
+.sdp-date-pills-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sdp-date-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  min-height: 58px;
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  text-align: center;
+}
+
+.sdp-date-pill:hover {
+  background: #f3efed;
+  border-color: #ded7d4;
+}
+
+.sdp-date-pill.is-selected {
+  background: #1b1416;
+  border-color: #1b1416;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(27, 20, 22, 0.22);
+  transform: translateY(-1px);
+}
+
+.sdp-date-pill-main {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #1b1416;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sdp-date-pill.is-selected .sdp-date-pill-main {
+  color: #ffffff;
+}
+
+.sdp-date-pill-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c827a;
+  margin-top: 2px;
+}
+
+.sdp-date-pill.is-selected .sdp-date-pill-sub {
+  color: #ffc72c; /* Sime Darby Gold accent */
+}
+
+/* Direct Time Selection Box */
+.sdp-custom-time-box {
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.sdp-time-dropdowns-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sdp-time-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.sdp-time-select-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #8c827a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.sdp-time-select {
+  height: 46px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid #ebe7e5;
+  background: #faf8f7;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1b1416;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  padding: 0 8px;
+}
+
+.sdp-time-select:hover {
+  border-color: #d6ceca;
+  background: #ffffff;
+}
+
+.sdp-time-select:focus {
+  border-color: #c8102e;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+
+.sdp-time-colon {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1b1416;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.sdp-period-toggle-group {
+  display: flex;
+  border-radius: 12px;
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  padding: 3px;
+  gap: 2px;
+}
+
+.sdp-period-btn {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  color: #6b6063;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex: 1;
+}
+
+.sdp-period-btn.is-selected {
+  background: #c8102e;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(200, 16, 46, 0.25);
+}
+
+/* Neighbourhood button */
+.sdp-neighbourhood-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.sdp-neighbourhood-btn:hover {
+  background: #f5f1ef;
+  border-color: #d6ceca;
+}
+
+.sdp-area-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c8102e;
+  display: inline-block;
+}
+
+/* Venue suggestions */
+.sdp-venue-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.sdp-venue-suggestion-chip {
+  border: 1px solid #e5e0de;
+  background: #faf8f7;
+  color: #55484a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.sdp-venue-suggestion-chip:hover {
+  background: #f0ece9;
+  border-color: #d0c8c5;
+}
+
+.sdp-venue-suggestion-chip.active {
+  background: #fff1f2;
+  border-color: #c8102e;
+  color: #c8102e;
+  font-weight: 700;
+}
+
+/* Venue input wrapper */
+.sdp-venue-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1.5px solid #e3dedc;
+  border-radius: 12px;
+  padding: 8px 12px;
+  transition: border-color 0.15s ease;
+}
+
+.sdp-venue-input-container:focus-within {
+  border-color: #c8102e;
+}
+
+.sdp-venue-text-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b1416;
+  min-width: 0;
+}
+
+.sdp-venue-text-input::placeholder {
+  color: #a39a95;
+  font-weight: 500;
+}
+
+.sdp-venue-clear-btn {
+  border: 0;
+  background: none;
+  color: #a39a95;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.sdp-venue-clear-btn:hover {
+  color: #1b1416;
 }
 
 .area-row {
@@ -1260,14 +1827,14 @@ button {
 
 .area-menu {
   position: absolute;
-  left: 10px;
-  right: 10px;
+  left: 0;
+  right: 0;
   bottom: calc(100% + 6px);
-  z-index: 30;
+  z-index: 50;
   margin: 0;
   padding: 6px;
   list-style: none;
-  max-height: 280px;
+  max-height: 260px;
   overflow-y: auto;
   background: #fff;
   border-radius: 16px;
@@ -1445,6 +2012,310 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 14px;
+}
+
+/* ==========================================================================
+   Phone-Native Immersive QR Scanner Layout
+   ========================================================================== */
+
+.phone-qr-scanner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.phone-viewfinder-card {
+  width: 100%;
+  border-radius: 26px;
+  background: #000000;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.phone-camera-viewport {
+  position: relative;
+  width: 100%;
+  height: 330px;
+  background: #0d090b;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-camera-feed {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.phone-camera-feed video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Semi-transparent scan mask around the center target */
+.phone-scan-frame-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.phone-scan-target-box {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  border-radius: 20px;
+  /* Dark mask around the clear box */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.48);
+}
+
+/* Reticle corner brackets */
+.phone-reticle-corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: #ffc72c; /* Sime Darby Gold accent */
+  border-style: solid;
+}
+
+.phone-reticle-corner.top-left {
+  top: -2px;
+  left: -2px;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 16px;
+}
+
+.phone-reticle-corner.top-right {
+  top: -2px;
+  right: -2px;
+  border-width: 4px 4px 0 0;
+  border-top-right-radius: 16px;
+}
+
+.phone-reticle-corner.bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 4px 4px;
+  border-bottom-left-radius: 16px;
+}
+
+.phone-reticle-corner.bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 4px 4px 0;
+  border-bottom-right-radius: 16px;
+}
+
+/* Laser sweep */
+.phone-laser-line {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #c8102e, #ffc72c, #c8102e, transparent);
+  box-shadow: 0 0 14px rgba(255, 199, 44, 0.9), 0 0 6px rgba(200, 16, 46, 0.8);
+  border-radius: 9999px;
+  animation: phone-laser-sweep 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes phone-laser-sweep {
+  0% {
+    top: 8%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 92%;
+    opacity: 0.8;
+  }
+}
+
+/* Scan success overlay */
+.phone-scan-success-anim {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 185, 129, 0.4);
+  backdrop-filter: blur(4px);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: sdp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* HUD Overlays */
+.phone-hud-top-bar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.phone-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.phone-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: sdp-pulse-dot 1.5s infinite ease-in-out;
+}
+
+.phone-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-hud-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.phone-hud-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.phone-hud-icon-btn.active {
+  background: #ffc72c;
+  color: #1b1416;
+  border-color: #ffc72c;
+}
+
+.phone-hud-bottom-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.phone-guidance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.phone-camera-loading {
+  position: absolute;
+  inset: 0;
+  background: #0d090b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 5;
+}
+
+/* Paused state card */
+.phone-paused-card {
+  width: 100%;
+  background: #faf8f7;
+  border: 1.5px solid #ebe7e5;
+  border-radius: 20px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.phone-paused-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1.5px solid #e3dedc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Manual Code Entry Button & Section */
+.sdp-manual-code-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sdp-manual-code-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #6b6063;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.sdp-manual-code-toggle:hover {
+  color: #c8102e;
+  background: #fff1f2;
 }
 
 .generated-qr {
@@ -2193,7 +3064,7 @@ button.profile-row:not(:disabled):active {
 }
 
 /* ==========================================================================
-   Tolong Assistant — Bilingual Senior & Community AI Guide
+   Tolong Assistant — Bilingual Senior & Community AI Guide (SDP Branded)
    ========================================================================== */
 
 .sdp-assistant-floating-btn {
@@ -2203,7 +3074,7 @@ button.profile-row:not(:disabled):active {
   z-index: 60;
   width: 56px;
   height: 56px;
-  background: #047857;
+  background: linear-gradient(135deg, #C8102E 0%, #A00C24 100%);
   color: #ffffff;
   border: 2.5px solid #ffffff;
   border-radius: 50%;
@@ -2212,15 +3083,14 @@ button.profile-row:not(:disabled):active {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 6px 22px rgba(4, 120, 87, 0.35);
+  box-shadow: 0 8px 24px rgba(200, 16, 46, 0.45), 0 2px 6px rgba(27, 20, 22, 0.12);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease, box-shadow 0.2s ease;
   will-change: transform, opacity;
 }
 
 .sdp-assistant-floating-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 8px 26px rgba(4, 120, 87, 0.45);
-  background: #065F46;
+  box-shadow: 0 10px 28px rgba(200, 16, 46, 0.55);
 }
 
 .sdp-assistant-floating-btn:active {
@@ -2233,10 +3103,24 @@ button.profile-row:not(:disabled):active {
   pointer-events: none;
 }
 
+.sdp-assistant-floating-badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 13px;
+  height: 13px;
+  background: #FFC72C;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 .sdp-assistant-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(27, 20, 22, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -2262,8 +3146,8 @@ button.profile-row:not(:disabled):active {
   justify-content: center;
   align-items: center;
   padding-top: 10px;
-  padding-bottom: 4px;
-  background: #FAFAF9;
+  padding-bottom: 6px;
+  background: linear-gradient(135deg, #C8102E 0%, #B00E29 60%, #900B21 100%);
   cursor: pointer;
 }
 
@@ -2271,7 +3155,7 @@ button.profile-row:not(:disabled):active {
   width: 38px;
   height: 4.5px;
   border-radius: 999px;
-  background: #D6D3D1;
+  background: rgba(255, 255, 255, 0.38);
 }
 
 .sdp-assistant-card {
@@ -2279,9 +3163,9 @@ button.profile-row:not(:disabled):active {
   border-radius: 28px 28px 0 0;
   display: flex;
   flex-direction: column;
-  height: 82%;
-  max-height: 82%;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+  height: 84%;
+  max-height: 84%;
+  box-shadow: 0 -12px 40px rgba(27, 20, 22, 0.28);
   overflow: hidden;
   transform: translateY(100%);
   transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2296,9 +3180,10 @@ button.profile-row:not(:disabled):active {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid var(--sdp-stone-line);
-  background: #FAFAF9;
+  padding: 12px 18px 16px;
+  background: linear-gradient(135deg, #C8102E 0%, #B00E29 60%, #900B21 100%);
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sdp-assistant-title-group {
@@ -2308,25 +3193,28 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-assistant-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #D1FAE5;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .sdp-assistant-title {
   font-size: 15px;
   font-weight: 800;
-  color: var(--sdp-ink);
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .sdp-assistant-subtitle {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--sdp-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #FFE3E6;
 }
 
 .sdp-assistant-header-actions {
@@ -2344,44 +3232,48 @@ button.profile-row:not(:disabled):active {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 999px;
-  padding: 4px 8px 4px 7px;
+  padding: 5px 9px 5px 8px;
   cursor: pointer;
-  color: #1F2937;
+  color: #ffffff;
   transition: all 0.15s ease;
 }
 
 .sdp-lang-trigger-btn:hover {
-  background: #E5E7EB;
-  border-color: #D1D5DB;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .sdp-lang-trigger-btn.open {
-  background: #E6F4EA;
-  border-color: #A7F3D0;
-  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.15);
+  background: #ffffff;
+  color: #C8102E;
+  border-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .sdp-lang-trigger-badge {
   font-size: 11px;
-  font-weight: 700;
-  color: #065F46;
+  font-weight: 800;
+  color: #FFC72C;
   letter-spacing: 0.2px;
+}
+
+.sdp-lang-trigger-btn.open .sdp-lang-trigger-badge {
+  color: #C8102E;
 }
 
 /* Dropdown Menu */
 .sdp-lang-menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   right: 0;
-  width: 230px;
+  width: 240px;
   background: #ffffff;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #EBE7E5;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 12px 32px rgba(27, 20, 22, 0.18);
   z-index: 100;
   animation: sdpDropdownFade 0.15s ease-out;
   transform-origin: top right;
@@ -2401,9 +3293,9 @@ button.profile-row:not(:disabled):active {
 .sdp-lang-menu-header {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6B7280;
+  color: #6B6063;
   padding: 6px 10px 4px;
 }
 
@@ -2414,7 +3306,7 @@ button.profile-row:not(:disabled):active {
   gap: 10px;
   background: none;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 10px;
   text-align: left;
   cursor: pointer;
@@ -2422,11 +3314,11 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-lang-menu-item:hover {
-  background: #F3F4F6;
+  background: #FAF8F7;
 }
 
 .sdp-lang-menu-item.selected {
-  background: #ECFDF5;
+  background: #FFF1F2;
 }
 
 .sdp-lang-menu-flag {
@@ -2445,18 +3337,19 @@ button.profile-row:not(:disabled):active {
 .sdp-lang-menu-name {
   font-size: 12.5px;
   font-weight: 700;
-  color: #111827;
+  color: #1B1416;
   line-height: 1.2;
 }
 
 .sdp-lang-menu-item.selected .sdp-lang-menu-name {
-  color: #065F46;
+  color: #C8102E;
+  font-weight: 800;
 }
 
 .sdp-lang-menu-sub {
   font-size: 10.5px;
   font-weight: 500;
-  color: #6B7280;
+  color: #6B6063;
   line-height: 1.2;
   margin-top: 1px;
 }
@@ -2464,59 +3357,83 @@ button.profile-row:not(:disabled):active {
 .sdp-lang-menu-check {
   margin-left: auto;
   flex-shrink: 0;
+  color: #C8102E;
 }
 
 .sdp-font-toggle-btn {
-  background: #E5E7EB;
-  border: 0;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 5px 11px;
   font-size: 11px;
-  font-weight: 700;
-  color: #374151;
+  font-weight: 800;
+  color: #ffffff;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sdp-font-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .sdp-font-toggle-btn.active {
-  background: #065F46;
-  color: #ffffff;
+  background: #FFC72C;
+  color: #1B1416;
+  border-color: #FFC72C;
 }
 
 .sdp-assistant-close-btn {
-  background: none;
-  border: 0;
-  color: var(--sdp-muted);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
   cursor: pointer;
-  padding: 4px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sdp-assistant-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .sdp-assistant-chips-container {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 10px 14px;
   overflow-x: auto;
   scrollbar-width: none;
-  background: #F9F8F6;
-  border-bottom: 1px solid #ECE7E1;
+  background: #FAF8F7;
+  border-bottom: 1px solid #EBE7E5;
+}
+
+.sdp-assistant-chips-container::-webkit-scrollbar {
+  display: none;
 }
 
 .sdp-assistant-chip {
   flex: none;
   background: #ffffff;
-  border: 1px solid #E2DCD5;
+  border: 1.5px solid #E3DEDC;
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: 6px 13px;
   font-size: 11.5px;
-  font-weight: 600;
-  color: var(--sdp-ink);
+  font-weight: 700;
+  color: #1B1416;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
 }
 
 .sdp-assistant-chip:hover {
-  background: #F0EDE8;
+  background: #FFF1F2;
+  border-color: #C8102E;
+  color: #C8102E;
+  transform: translateY(-1px);
 }
 
 .sdp-assistant-messages {
@@ -2528,6 +3445,7 @@ button.profile-row:not(:disabled):active {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: #FAF8F7;
 }
 
 .sdp-assistant-msg-row {
@@ -2541,133 +3459,209 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-bot-bubble-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #D1FAE5;
+  background: #FFF1F2;
+  border: 1px solid #FFE4E6;
+  color: #C8102E;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(200, 16, 46, 0.08);
 }
 
 .sdp-assistant-bubble {
   max-width: 82%;
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: 18px;
   font-size: 13.5px;
-  line-height: 1.45;
+  line-height: 1.48;
   word-break: break-word;
 }
 
 .sdp-assistant-bubble.bot-bubble {
-  background: #F3F4F6;
+  background: #ffffff;
   color: var(--sdp-ink);
+  border: 1.5px solid #EBE7E5;
   border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 6px rgba(27, 20, 22, 0.04);
 }
 
 .sdp-assistant-bubble.user-bubble {
-  background: var(--sdp-red);
+  background: linear-gradient(135deg, #C8102E 0%, #A80D26 100%);
   color: #ffffff;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 3px 10px rgba(200, 16, 46, 0.28);
+}
+
+.sdp-assistant-bubble.typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  min-height: 38px;
+}
+
+.dot-typing {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #C8102E;
+  animation: sdpDotPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes sdpDotPulse {
+  0%, 100% {
+    transform: scale(0.65);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
 }
 
 .sdp-proposal-card {
-  background: #F0FDF4;
-  border: 1.5px solid #86EFAC;
-  border-radius: 16px;
-  padding: 14px;
+  background: #ffffff;
+  border: 1.5px solid #EBE7E5;
+  border-radius: 20px;
+  padding: 16px;
   margin-top: 4px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 4px 18px rgba(27, 20, 22, 0.08);
+  border-left: 4px solid #C8102E;
 }
 
 .sdp-proposal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .sdp-proposal-badge {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-  background: #DCFCE7;
-  color: #166534;
-  padding: 2px 8px;
-  border-radius: 6px;
+  background: #FFF1F2;
+  color: #C8102E;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.sdp-proposal-points {
+  font-size: 11.5px;
+  font-weight: 800;
+  background: #FFC72C;
+  color: #1B1416;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
 .sdp-proposal-category {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #047857;
+  color: #6B6063;
+  background: #F4F1EE;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
 .sdp-proposal-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
-  color: #064E3B;
-  margin-bottom: 4px;
+  color: #1B1416;
+  margin-bottom: 6px;
+  line-height: 1.3;
 }
 
 .sdp-proposal-desc {
-  font-size: 12.5px;
-  color: #374151;
-  line-height: 1.4;
-  margin-bottom: 8px;
+  font-size: 13px;
+  color: #6B6063;
+  line-height: 1.45;
+  margin-bottom: 10px;
 }
 
 .sdp-proposal-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  font-size: 11px;
-  color: #4B5563;
-  margin-bottom: 12px;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #FAF8F7;
+  border: 1px solid #EBE7E5;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6B6063;
+  margin-bottom: 14px;
 }
 
 .sdp-proposal-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sdp-proposal-confirm-btn {
   flex: 1;
-  background: #047857;
-  color: #ffffff;
+  background: #FFC72C;
+  color: #1B1416;
   border: 0;
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: 12.5px;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(255, 199, 44, 0.35);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sdp-proposal-confirm-btn:hover {
+  background: #FFB800;
+  transform: translateY(-1px);
+}
+
+.sdp-proposal-confirm-btn:active {
+  transform: scale(0.98);
+}
+
+.sdp-proposal-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sdp-proposal-cancel-btn {
+  background: #F4F1EE;
+  color: #6B6063;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
-.sdp-proposal-confirm-btn:hover {
-  background: #065F46;
-}
-
-.sdp-proposal-cancel-btn {
-  background: #E5E7EB;
-  color: #374151;
-  border: 0;
-  border-radius: 10px;
-  padding: 9px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
+.sdp-proposal-cancel-btn:hover {
+  background: #EBE7E5;
 }
 
 .sdp-proposal-success {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #DCFCE7;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 12px;
+  background: #F0FDF4;
+  border: 1.5px solid #86EFAC;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #166534;
 }
@@ -2677,7 +3671,7 @@ button.profile-row:not(:disabled):active {
   align-items: center;
   background: #FEE2E2;
   color: #991B1B;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
@@ -2686,42 +3680,62 @@ button.profile-row:not(:disabled):active {
 .sdp-assistant-input-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: #FAFAF9;
-  border-top: 1px solid var(--sdp-stone-line);
+  gap: 10px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid #EBE7E5;
 }
 
 .sdp-assistant-input {
   flex: 1;
-  border: 1px solid var(--sdp-stone-line);
-  background: #ffffff;
+  border: 1.5px solid #E3DEDC;
+  background: #FAF8F7;
   border-radius: 999px;
-  padding: 9px 14px;
-  font-size: 13px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  color: #1B1416;
+  font-family: inherit;
   outline: none;
+  transition: all 0.15s ease;
 }
 
 .sdp-assistant-input:focus {
-  border-color: #047857;
+  background: #ffffff;
+  border-color: #C8102E;
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
 }
 
 .sdp-assistant-send-btn {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #047857;
+  background: #C8102E;
   color: #ffffff;
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 3px 12px rgba(200, 16, 46, 0.35);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sdp-assistant-send-btn:hover {
+  background: #A00C24;
+  transform: scale(1.05);
+}
+
+.sdp-assistant-send-btn:active {
+  transform: scale(0.95);
 }
 
 .sdp-assistant-send-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
+  background: #D1CDCB;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Senior Accessibility Mode (A+ Large Text) */
@@ -2731,7 +3745,7 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-assistant-card.large-text .sdp-proposal-title {
-  font-size: 16.5px !important;
+  font-size: 17.5px !important;
 }
 
 .sdp-assistant-card.large-text .sdp-proposal-desc {
@@ -2740,6 +3754,11 @@ button.profile-row:not(:disabled):active {
 
 .sdp-assistant-card.large-text .sdp-proposal-confirm-btn {
   font-size: 14.5px !important;
-  padding: 12px 14px !important;
+  padding: 13px 16px !important;
 }
+
+.sdp-assistant-card.large-text .sdp-assistant-input {
+  font-size: 15px !important;
+}
+
 

@@ -320,6 +320,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
         title="Tolong Assistant"
       >
         <Bot className="w-7 h-7 text-white" strokeWidth={2.2} />
+        <span className="sdp-assistant-floating-badge" aria-hidden="true" />
       </button>
 
       {/* Assistant Modal / Bottom Sheet */}
@@ -343,7 +344,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
             <header className="sdp-assistant-header">
               <div className="sdp-assistant-title-group">
                 <div className="sdp-assistant-avatar">
-                  <Bot className="w-5 h-5 text-emerald-800" />
+                  <Bot className="w-5 h-5 text-[#C8102E]" />
                 </div>
                 <div>
                   <h3 className="sdp-assistant-title">Tolong Assistant</h3>
@@ -370,7 +371,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                     aria-label="Pilih Bahasa / Select Language"
                     aria-expanded={isLangDropdownOpen}
                   >
-                    <LanguageTranslateIcon className="w-5 h-5 text-emerald-800" />
+                    <LanguageTranslateIcon className="w-4 h-4 text-current" />
                     <span className="sdp-lang-trigger-badge">
                       {selectedLang === "auto"
                         ? "Auto"
@@ -381,7 +382,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                         : "EN"}
                     </span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-stone-500 transition-transform ${
+                      className={`w-3.5 h-3.5 opacity-80 transition-transform ${
                         isLangDropdownOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -406,7 +407,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                             <span className="sdp-lang-menu-sub">{opt.subtext}</span>
                           </div>
                           {selectedLang === opt.code && (
-                            <Check className="w-4 h-4 text-emerald-700 sdp-lang-menu-check" />
+                            <Check className="w-4 h-4 text-[#C8102E] sdp-lang-menu-check" />
                           )}
                         </button>
                       ))}
@@ -431,7 +432,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                   onClick={handleClose}
                   aria-label="Tutup pembantu"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </header>
@@ -459,7 +460,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                 >
                   {m.role === "assistant" && (
                     <div className="sdp-bot-bubble-avatar">
-                      <Bot className="w-4 h-4 text-emerald-700" />
+                      <Bot className="w-4 h-4 text-[#C8102E]" />
                     </div>
                   )}
                   <div className={`sdp-assistant-bubble ${m.role === "user" ? "user-bubble" : "bot-bubble"}`}>
@@ -471,7 +472,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
               {isTyping && (
                 <div className="sdp-assistant-msg-row assistant-row">
                   <div className="sdp-bot-bubble-avatar">
-                    <Bot className="w-4 h-4 text-emerald-700" />
+                    <Bot className="w-4 h-4 text-[#C8102E]" />
                   </div>
                   <div className="sdp-assistant-bubble bot-bubble typing-bubble">
                     <span className="dot-typing" />
@@ -483,20 +484,29 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
               {activeProposal && (
                 <div className="sdp-proposal-card">
                   <div className="sdp-proposal-header">
-                    <span className="sdp-proposal-badge">
-                      {activeProposal.type === "request"
-                        ? selectedLang === "en"
-                          ? "Community Request"
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span className="sdp-proposal-badge">
+                        {activeProposal.type === "request"
+                          ? selectedLang === "en"
+                            ? "Request"
+                            : selectedLang === "ms"
+                            ? "Permintaan"
+                            : selectedLang === "zh"
+                            ? "求助"
+                            : "Request"
+                          : selectedLang === "en"
+                          ? "Offer"
                           : selectedLang === "ms"
-                          ? "Permintaan Komuniti"
-                          : "Permintaan / Request"
-                        : selectedLang === "en"
-                        ? "Community Offer"
-                        : selectedLang === "ms"
-                        ? "Tawaran Komuniti"
-                        : "Tawaran / Offer"}
+                          ? "Tawaran"
+                          : selectedLang === "zh"
+                          ? "提供"
+                          : "Offer"}
+                      </span>
+                      <span className="sdp-proposal-category">{activeProposal.category}</span>
+                    </div>
+                    <span className="sdp-proposal-points">
+                      {activeProposal.type === "offer" ? "Free" : "+20 pts"}
                     </span>
-                    <span className="sdp-proposal-category">{activeProposal.category}</span>
                   </div>
 
                   <h4 className="sdp-proposal-title">{activeProposal.title}</h4>
@@ -534,7 +544,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
                             : "Menyiarkan..."
                         ) : (
                           <>
-                            <CheckCircle className="w-4 h-4 mr-1 inline" />
+                            <CheckCircle className="w-4 h-4 mr-1.5 inline" />
                             {selectedLang === "en"
                               ? "Confirm & Post to Community"
                               : selectedLang === "zh"
