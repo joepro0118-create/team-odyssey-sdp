@@ -162,9 +162,9 @@ export function CreateListing({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (!form.title.trim() || form.title.length < 6) {
-                setError("Please give your post a clear title (at least 6 characters).");
-                return;
+              // Title is optional — fall back to the category name if blank
+              if (!form.title.trim()) {
+                setForm((prev) => ({ ...prev, title: prev.category }));
               }
               if (!form.description.trim() || form.description.length < 10) {
                 // Auto-fill description if title is descriptive
@@ -239,13 +239,11 @@ export function CreateListing({
             {/* Title & Details card */}
             <div className="sdp-card">
               <label className="sdp-section-label" htmlFor="post-title">
-                Give it a clear title
+                Title <span style={{ fontWeight: 500, opacity: 0.6 }}>(optional)</span>
               </label>
               <input
                 id="post-title"
-                aria-label="Give it a clear title"
-                required
-                minLength={6}
+                aria-label="Title (optional)"
                 maxLength={80}
                 value={form.title}
                 onChange={(e) => update("title", e.target.value)}
