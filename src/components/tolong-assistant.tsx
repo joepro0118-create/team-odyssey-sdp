@@ -117,7 +117,7 @@ export function TolongAssistant({ onListingCreated }: TolongAssistantProps) {
           aria-label="Tolong Assistant"
           title="Tolong Assistant"
         >
-          <Bot className="w-5 h-5 text-emerald-700" />
+          <Bot className="w-5 h-5 text-white" />
         </button>
       )}
 
