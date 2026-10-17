@@ -1,4 +1,5 @@
 import { MarketplaceError } from "@/lib/marketplace-service";
+import { encryptTaskMessage, decryptTaskMessage } from "@/lib/server/chat-crypto";
 import { apiError, json, readBody } from "@/lib/server/http";
 import { requireSupabaseUser } from "@/lib/server/supabase";
 
@@ -51,7 +52,7 @@ export async function GET(
       senderId: m.sender_id,
       isSelf: m.sender_id === user.id,
       senderLabel: m.sender_id === listing?.creator_id ? "Requester" : "Helper",
-      message: m.message,
+      message: decryptTaskMessage(m.message),
       createdAt: m.created_at,
     }));
     return json({ messages, isLocked });
@@ -69,8 +70,8 @@ export async function POST(
     const body = (await readBody(request)) as { message?: string };
     const text = typeof body?.message === "string" ? body.message.trim() : "";
 
-    if (!text || text.length > 500) {
-      throw new MarketplaceError("Message must be between 1 and 500 characters.", 400);
+    if (!text || text.length > 300) {
+      throw new MarketplaceError("Message must be between 1 and 300 characters.", 400);
     }
 
     const { supabase, user } = await requireSupabaseUser(request);
@@ -100,13 +101,14 @@ export async function POST(
     }
 
     const senderLabel = isCreator ? "Requester" : "Helper";
+    const encryptedMessage = encryptTaskMessage(text);
 
     const { data: inserted, error: insertError } = await supabase
       .from("task_messages")
       .insert({
         assignment_id: assignmentId,
         sender_id: user.id,
-        message: text,
+        message: encryptedMessage,
       })
       .select("id, sender_id, message, created_at")
       .single();
@@ -122,7 +124,7 @@ export async function POST(
         senderId: inserted.sender_id,
         isSelf: true,
         senderLabel,
-        message: inserted.message,
+        message: decryptTaskMessage(inserted.message),
         createdAt: inserted.created_at,
       },
       201,
