@@ -54,6 +54,17 @@ test("preview rewards can be listed and redeemed", async () => {
   assert.equal(after.rewards[0].stock, drink.stock - 1);
 });
 
+test("preview rewards have valid points cost and active stock for all screens", async () => {
+  const api = createBrowserPreview();
+  const res = await api<RewardsResponse>("/api/rewards");
+  assert.ok(res.rewards.length > 0);
+  for (const reward of res.rewards) {
+    assert.ok(reward.pointsCost > 0, "Reward points cost must be positive");
+    assert.ok(reward.stock >= 0, "Reward stock must be non-negative");
+    assert.ok(reward.title.length > 0, "Reward title must not be empty");
+  }
+});
+
 test("preview task chat and QR handover confirmation update messages, lock state, and points balance", async () => {
   const api = createBrowserPreview();
   const listing = await api<Listing>("/api/listings", {
