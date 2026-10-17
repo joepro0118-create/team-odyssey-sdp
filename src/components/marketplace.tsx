@@ -156,16 +156,23 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                   <span className="sdp-prompt-bar-icon" aria-hidden="true">
                     <Sparkles size={18} />
                   </span>
-                  <input
-                    id="home-assistant-prompt"
-                    className="sdp-prompt-bar-input"
-                    type="text"
-                    value={promptText}
-                    onChange={(e) => setPromptText(e.target.value)}
-                    placeholder="Perlukan bantuan? / Need help? Type here…"
-                    aria-label="Describe what you need"
-                    enterKeyHint="send"
-                  />
+                  <div className="sdp-prompt-bar-field">
+                    {!promptText && (
+                      <span className="sdp-prompt-bar-flow" aria-hidden="true">
+                        Perlukan bantuan? / Need help? Type here…
+                      </span>
+                    )}
+                    <input
+                      id="home-assistant-prompt"
+                      className="sdp-prompt-bar-input"
+                      type="text"
+                      value={promptText}
+                      onChange={(e) => setPromptText(e.target.value)}
+                      placeholder=""
+                      aria-label="Describe what you need"
+                      enterKeyHint="send"
+                    />
+                  </div>
                   <button
                     type="submit"
                     id="home-assistant-open"
