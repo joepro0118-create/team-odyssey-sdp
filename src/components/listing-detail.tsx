@@ -56,17 +56,20 @@ export function ListingDetail({
     api<Detail>(`/api/listings/${id}`, { signal: controller.signal })
       .then((data) => {
         setListing(data);
-        // Requirement 2: If user taps on their own request, ALWAYS open Diagram 2!
         if (data.isOwner) {
           if (data.status === "open") {
             api<Detail>(`/api/listings/${id}/simulate-accept`, {
               method: "POST",
               body: "{}",
             })
-              .then((updated) => setListing(updated))
+              .then((updated) => {
+                setListing(updated);
+                if (updated.status !== "open") setShowProgress(true);
+              })
               .catch(() => {});
+          } else {
+            setShowProgress(true);
           }
-          setShowProgress(true);
         }
       })
       .catch((err) => {
@@ -89,27 +92,15 @@ export function ListingDetail({
       setListing(updated);
       setConfirming(false);
       onAccepted();
-      setShowProgress(true);
+      if (updated.status !== "open") setShowProgress(true);
     } catch (err) {
-      // In simulated preview or demo mode, fallback to simulation if accept fails
-      try {
-        const fallback = await api<Detail>(`/api/listings/${id}/simulate-accept`, {
-          method: "POST",
-          body: "{}",
-        });
-        setListing(fallback);
-        onAccepted();
-        setShowProgress(true);
-      } catch {
-        setError(errorMessage(err));
-      }
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
   }
 
-  // Requirement 2: If the user taps on their own request, ALWAYS render Diagram 2 (ProgressScreen)
-  if (listing && (showProgress || listing.isOwner)) {
+  if (listing && showProgress && listing.status !== "open") {
     return (
       <ProgressScreen
         listing={listing}
@@ -315,6 +306,18 @@ export function ListingDetail({
               {/* Keep accessible heading for E2E tests */}
               <h4 className="sr-only">You’re connected</h4>
             </div>
+          ) : listing.isOwner ? (
+            <div className="accept-action-box">
+              <div className="privacy-hint">
+                This is your listing. Waiting for a neighbour to accept.
+              </div>
+              <button
+                className="sdp-btn-secondary full-width"
+                onClick={onClose}
+              >
+                Back to activity
+              </button>
+            </div>
           ) : (
             <div className="accept-action-box">
               <div className="privacy-hint">
@@ -333,14 +336,6 @@ export function ListingDetail({
                   ? "Accept offer"
                   : "Ask to borrow"}
               </button>
-              {listing.isOwner && (
-                <button
-                  className="sdp-btn-secondary full-width text-xs font-bold mt-2"
-                  onClick={() => setShowProgress(true)}
-                >
-                  View Handover & QR (Diagram 2)
-                </button>
-              )}
             </div>
           )}
         </div>

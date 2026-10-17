@@ -43,8 +43,9 @@ export function createBrowserPreview() {
     string,
     Array<{
       id: string;
-      senderRole: string;
-      content: string;
+      senderId: string;
+      senderLabel: string;
+      message: string;
       createdAt: string;
     }>
   > = {};
@@ -122,7 +123,9 @@ export function createBrowserPreview() {
         (input as { qrToken?: string } | null)?.qrToken ?? "demo-token";
       const match = /tolong-qr-([^-]+)/.exec(qrToken);
       const taskId = match ? match[1] : qrToken;
-      result = store.complete(taskId);
+      const completed = store.complete(taskId);
+      pointsBalance += completed.pointsAwarded;
+      result = completed;
     } else {
       const confirmationMatch =
         /^\/api\/tasks\/([^/]+)\/confirmation$/.exec(path);
@@ -136,29 +139,61 @@ export function createBrowserPreview() {
         const messagesMatch = /^\/api\/tasks\/([^/]+)\/messages$/.exec(path);
         if (messagesMatch) {
           const asgnId = messagesMatch[1];
+          const cleanListingId = asgnId.replace(/^asgn-/, "");
+          const relatedListing = store
+            .list(resident)
+            .find((l) => l.id === cleanListingId || l.id === asgnId);
+          const isLocked =
+            relatedListing?.status === "completed" ||
+            relatedListing?.status === "cancelled";
+
           if (!messagesStore[asgnId]) {
             messagesStore[asgnId] = [
               {
                 id: "msg-welcome",
-                senderRole: "partner",
-                content:
+                senderId: "partner",
+                senderLabel: relatedListing?.isOwner ? "Helper" : "Requester",
+                message:
                   "Hi! Thanks for connecting. Let's arrange our meeting at the precinct hub.",
                 createdAt: new Date(Date.now() - 300000).toISOString(),
               },
             ];
           }
           if (method === "GET") {
-            result = { messages: messagesStore[asgnId] };
+            result = {
+              messages: messagesStore[asgnId].map((m) => ({
+                ...m,
+                isSelf: m.senderId === resident,
+              })),
+              isLocked,
+            };
           } else if (method === "POST") {
-            const body = input as { content?: string };
+            if (isLocked) {
+              throw new MarketplaceError(
+                "Task is no longer active for messaging.",
+                400,
+              );
+            }
+            const body = input as { message?: string; content?: string } | null;
+            const text = (body?.message ?? body?.content ?? "").trim();
+            if (!text || text.length > 500) {
+              throw new MarketplaceError(
+                "Message must be between 1 and 500 characters.",
+                400,
+              );
+            }
             const newMsg = {
               id: `msg-${Date.now()}`,
-              senderRole: "user",
-              content: body.content || "",
+              senderId: resident,
+              senderLabel: relatedListing?.isOwner ? "Requester" : "Helper",
+              message: text,
               createdAt: new Date().toISOString(),
             };
             messagesStore[asgnId].push(newMsg);
-            result = newMsg;
+            result = {
+              ...newMsg,
+              isSelf: true,
+            };
           }
         } else {
           const simAcceptMatch =

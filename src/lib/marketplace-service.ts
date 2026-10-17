@@ -65,12 +65,14 @@ export function validateListing(value: unknown): ListingInput {
     throw new MarketplaceError("Choose a listing type.");
   if (!categories.includes(input.category as never))
     throw new MarketplaceError("Choose a category.");
-  if (!areas.includes(input.area as never))
+  const rawArea = typeof input.area === "string" ? input.area.trim() : "";
+  const baseArea = rawArea.split(" · ")[0];
+  if (!rawArea || rawArea.length > 80 || !areas.includes(baseArea as never))
     throw new MarketplaceError("Choose a demo area.");
   const title = boundedText(input.title, "Title", 6, 80);
   const description = boundedText(input.description, "Description", 20, 600);
   const timing = boundedText(input.timing, "When", 3, 80);
-  const publicText = `${title} ${description} ${timing}`;
+  const publicText = `${title} ${description} ${timing} ${rawArea}`;
   if (
     /\b(prescription|prescribed|preskripsi|ubat terkawal|antibiotic\w*|antibiotik\w*|insulin|amoxicillin|amoxicilin|amoksisilin|warfarin|tramadol|diazepam)\b/i.test(
       publicText,
@@ -101,7 +103,7 @@ export function validateListing(value: unknown): ListingInput {
   return {
     type: input.type as ListingInput["type"],
     category: input.category as ListingInput["category"],
-    area: input.area as ListingInput["area"],
+    area: rawArea as ListingInput["area"],
     title,
     description,
     timing,
@@ -227,6 +229,7 @@ export class DemoMarketplace {
   }
 
   complete(idOrAssignmentId: string): {
+    assignmentId: string;
     success: boolean;
     pointsAwarded: number;
     status: "completed";
@@ -241,6 +244,7 @@ export class DemoMarketplace {
     if (item) {
       item.status = "completed";
       return {
+        assignmentId: item.assignmentId ?? `asgn-${item.id}`,
         success: true,
         pointsAwarded: item.pointsReward ?? 20,
         status: "completed",
@@ -251,12 +255,14 @@ export class DemoMarketplace {
     if (firstAccepted) {
       firstAccepted.status = "completed";
       return {
+        assignmentId: firstAccepted.assignmentId ?? `asgn-${firstAccepted.id}`,
         success: true,
         pointsAwarded: firstAccepted.pointsReward ?? 20,
         status: "completed",
       };
     }
     return {
+      assignmentId: idOrAssignmentId,
       success: true,
       pointsAwarded: 20,
       status: "completed",

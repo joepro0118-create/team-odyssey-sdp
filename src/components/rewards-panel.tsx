@@ -55,8 +55,8 @@ export function RewardsPanel({
     }
   }
 
-  const balance = data?.balance ?? 140;
-  const estimatedRm = (balance * 0.1).toFixed(0);
+  const isLoading = !data && !error;
+  const balance = data?.balance;
 
   return (
     <div className="sdp-screen-view" role="region" aria-label="Township Rewards">
@@ -110,9 +110,12 @@ export function RewardsPanel({
         {/* Balance Card matching 6_Points_and_rewards */}
         <div className="sdp-card sdp-balance-card">
           <div className="balance-label">Your community balance</div>
-          <div className="balance-pts">{balance} pts</div>
-          <div className="balance-rm">
-            ≈ RM {estimatedRm} in local township vouchers
+          <div className="balance-pts">
+            {isLoading ? (
+              <span className="opacity-40 animate-pulse">··· pts</span>
+            ) : (
+              `${balance ?? 0} pts`
+            )}
           </div>
         </div>
 
@@ -149,6 +152,7 @@ export function RewardsPanel({
                     disabled={
                       busy !== null ||
                       reward.stock < 1 ||
+                      balance === undefined ||
                       balance < reward.pointsCost
                     }
                     onClick={() => void redeem(reward.id, reward.title)}

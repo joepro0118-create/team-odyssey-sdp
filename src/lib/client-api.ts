@@ -15,6 +15,15 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   // server's role checks, including who may show or scan a handover QR.
   if (!token) return previewApi<T>(path, options);
 
+  const simAcceptMatch = /^\/api\/listings\/([^/]+)\/simulate-accept$/.exec(
+    path,
+  );
+  if (simAcceptMatch) {
+    return api<T>(`/api/listings/${simAcceptMatch[1]}`, {
+      signal: options?.signal,
+    });
+  }
+
   const response = await fetch(path, {
     ...options,
     cache: "no-store",

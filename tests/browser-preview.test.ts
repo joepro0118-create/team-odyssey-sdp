@@ -1,7 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createBrowserPreview } from "../src/lib/browser-preview";
-import { templates, type Listing, type ListingDetail, type FeedResponse, type RewardsResponse, type Redemption } from "../src/lib/types";
+import {
+  templates,
+  type Listing,
+  type ListingDetail,
+  type FeedResponse,
+  type RewardsResponse,
+  type Redemption,
+  type ConfirmationResult,
+  type CompletionResult,
+  type TaskChatResponse,
+  type TaskMessage,
+} from "../src/lib/types";
 
 test("preview can post, switch residents, accept, and view activity within one tab", async () => {
   const api = createBrowserPreview();
@@ -41,6 +52,57 @@ test("preview rewards can be listed and redeemed", async () => {
   const after = await api<RewardsResponse>("/api/rewards");
   assert.equal(after.balance, 140 - drink.pointsCost);
   assert.equal(after.rewards[0].stock, drink.stock - 1);
+});
+
+test("preview task chat and QR handover confirmation update messages, lock state, and points balance", async () => {
+  const api = createBrowserPreview();
+  const listing = await api<Listing>("/api/listings", {
+    method: "POST",
+    body: JSON.stringify(templates[0]),
+  });
+  await api("/api/demo-session", {
+    method: "POST",
+    body: JSON.stringify({ resident: "resident-b" }),
+  });
+  const accepted = await api<ListingDetail>(
+    `/api/listings/${listing.id}/accept`,
+    { method: "POST", body: "{}" },
+  );
+  const assignmentId = accepted.assignmentId!;
+
+  const sent = await api<TaskMessage>(`/api/tasks/${assignmentId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ message: "I am on my way!" }),
+  });
+  assert.equal(sent.message, "I am on my way!");
+  assert.equal(sent.isSelf, true);
+  assert.equal(sent.senderLabel, "Helper");
+
+  const chat = await api<TaskChatResponse>(
+    `/api/tasks/${assignmentId}/messages`,
+  );
+  assert.equal(chat.isLocked, false);
+  assert.equal(chat.messages.at(-1)?.message, "I am on my way!");
+
+  const confirmation = await api<ConfirmationResult>(
+    `/api/tasks/${assignmentId}/confirmation`,
+    { method: "POST", body: "{}" },
+  );
+  const beforeRewards = await api<RewardsResponse>("/api/rewards");
+  const completed = await api<CompletionResult>("/api/tasks/confirm", {
+    method: "POST",
+    body: JSON.stringify({ qrToken: confirmation.qrToken }),
+  });
+  assert.equal(completed.status, "completed");
+  assert.equal(completed.pointsAwarded, 20);
+
+  const afterRewards = await api<RewardsResponse>("/api/rewards");
+  assert.equal(afterRewards.balance, beforeRewards.balance + 20);
+
+  const lockedChat = await api<TaskChatResponse>(
+    `/api/tasks/${assignmentId}/messages`,
+  );
+  assert.equal(lockedChat.isLocked, true);
 });
 
 test("preview validation and unsupported actions give useful errors", async () => {

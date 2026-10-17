@@ -269,11 +269,15 @@ export function CreateListing({
                 : form.area;
               // Title is optional — fall back to the category name if blank
               const title = form.title.trim() || form.category;
-              // Description auto-fill if too short
+              // Description auto-fill if too short (backend requires 20-600 chars)
+              const rawDesc = form.description.trim();
+              const fallbackDesc = `${title}. Handover at ${fullArea}.`;
               const description =
-                form.description.trim().length >= 10
-                  ? form.description.trim()
-                  : `${title}. Handover at ${fullArea}.`;
+                rawDesc.length >= 20
+                  ? rawDesc
+                  : fallbackDesc.length >= 20
+                    ? fallbackDesc
+                    : `${fallbackDesc} Looking for a neighbour nearby to help out.`;
               setForm((prev) => ({
                 ...prev,
                 title,

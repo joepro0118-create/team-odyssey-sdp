@@ -3263,7 +3263,7 @@ button.profile-row:not(:disabled):active {
   align-items: center;
   padding-top: 10px;
   padding-bottom: 6px;
-  background: linear-gradient(135deg, #C8102E 0%, #B00E29 60%, #900B21 100%);
+  background: linear-gradient(115deg, #C8102E 0%, #C8102E 35%, #E8602A 68%, #FFC72C 100%);
   cursor: pointer;
 }
 
@@ -3271,7 +3271,7 @@ button.profile-row:not(:disabled):active {
   width: 38px;
   height: 4.5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .sdp-assistant-card {
@@ -3297,9 +3297,9 @@ button.profile-row:not(:disabled):active {
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px 16px;
-  background: linear-gradient(135deg, #C8102E 0%, #B00E29 60%, #900B21 100%);
+  background: linear-gradient(115deg, #C8102E 0%, #C8102E 35%, #E8602A 68%, #FFC72C 100%);
   color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .sdp-assistant-title-group {
@@ -3348,17 +3348,18 @@ button.profile-row:not(:disabled):active {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(27, 20, 22, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
   padding: 5px 9px 5px 8px;
   cursor: pointer;
   color: #ffffff;
+  backdrop-filter: blur(4px);
   transition: all 0.15s ease;
 }
 
 .sdp-lang-trigger-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(27, 20, 22, 0.32);
 }
 
 .sdp-lang-trigger-btn.open {
@@ -3371,7 +3372,7 @@ button.profile-row:not(:disabled):active {
 .sdp-lang-trigger-badge {
   font-size: 11px;
   font-weight: 800;
-  color: #FFC72C;
+  color: #ffffff;
   letter-spacing: 0.2px;
 }
 
@@ -3477,19 +3478,20 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-font-toggle-btn {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(27, 20, 22, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
   padding: 5px 11px;
   font-size: 11px;
   font-weight: 800;
   color: #ffffff;
   cursor: pointer;
+  backdrop-filter: blur(4px);
   transition: all 0.15s ease;
 }
 
 .sdp-font-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(27, 20, 22, 0.32);
 }
 
 .sdp-font-toggle-btn.active {
@@ -3499,8 +3501,8 @@ button.profile-row:not(:disabled):active {
 }
 
 .sdp-assistant-close-btn {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(27, 20, 22, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   color: #ffffff;
   cursor: pointer;
   width: 32px;
@@ -3509,11 +3511,12 @@ button.profile-row:not(:disabled):active {
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
   transition: all 0.15s ease;
 }
 
 .sdp-assistant-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(27, 20, 22, 0.35);
 }
 
 .sdp-assistant-chips-container {

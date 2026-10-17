@@ -326,14 +326,18 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                           <span className="sdp-pill-tag bg-yellow-400 text-stone-900 font-bold">
                             {req.status === "completed"
                               ? "Completed"
-                              : "Accepted"}
+                              : req.status === "open"
+                                ? "Open"
+                                : "Accepted"}
                           </span>
                         </div>
                         <h3 className="sdp-card-title mt-2">{req.title}</h3>
                         <p className="text-xs text-stone-500 mt-1">
                           {req.status === "completed"
                             ? "Handover completed"
-                            : "Ben is helping · Handover pending"}
+                            : req.status === "open"
+                              ? `${req.area} · Waiting for a neighbour to accept`
+                              : "Neighbour connected · Handover pending"}
                         </p>
                         {req.status !== "completed" && (
                           <div className="flex gap-2 mt-3">
@@ -342,10 +346,14 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedId(req.id);
-                                setSelectedQrMode("scan");
+                                setSelectedQrMode(
+                                  req.status === "open" ? null : "scan",
+                                );
                               }}
                             >
-                              Scan helper’s QR
+                              {req.status === "open"
+                                ? "View listing"
+                                : "Scan helper’s QR"}
                             </button>
                           </div>
                         )}
