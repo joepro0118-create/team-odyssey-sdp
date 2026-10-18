@@ -12,6 +12,7 @@ import {
   type CompletionResult,
   type TaskChatResponse,
   type TaskMessage,
+  type OperatorDashboardSummary,
 } from "../src/lib/types";
 
 test("preview can post, switch residents, accept, and view activity within one tab", async () => {
@@ -123,3 +124,13 @@ test("preview validation and unsupported actions give useful errors", async () =
   await assert.rejects(api("/api/listings", { method: "POST", body: "{" }), /could not be read/);
   await assert.rejects(api("/api/listings/missing", { method: "DELETE" }), /unavailable/);
 });
+
+test("preview operator summary reflects open, accepted, and completed listing counts", async () => {
+  const api = createBrowserPreview();
+  const initial = await api<OperatorDashboardSummary>("/api/operator/summary");
+  assert.equal(initial.openListings, templates.length);
+  assert.equal(initial.acceptedListings, 0);
+  assert.equal(initial.completedListings, 0);
+  assert.equal(initial.demo, true);
+});
+

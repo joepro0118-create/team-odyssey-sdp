@@ -95,6 +95,24 @@ export function createBrowserPreview() {
         balance: pointsBalance,
         rewards: demoRewards.map((reward) => ({ ...reward })),
       };
+    } else if (path === "/api/operator/summary" && method === "GET") {
+      const all = store.list(resident);
+      const openListings = all.filter((l) => l.status === "open").length;
+      const acceptedListings = all.filter(
+        (l) =>
+          l.status === "accepted" || l.status === "awaiting_confirmation",
+      ).length;
+      const completedListings = all.filter(
+        (l) => l.status === "completed",
+      ).length;
+      result = {
+        openListings,
+        acceptedListings,
+        completedListings,
+        totalPointsAwarded: completedListings * 20,
+        totalRedemptions: 0,
+        demo: true,
+      };
     } else if (method === "POST") {
       const redeemMatch = /^\/api\/rewards\/([^/]+)\/redeem$/.exec(path);
       if (redeemMatch) {

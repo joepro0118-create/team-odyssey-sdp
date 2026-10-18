@@ -34,6 +34,30 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [assistantSeed, setAssistantSeed] = useState("");
   const [promptText, setPromptText] = useState("");
+  const [isTabBarVisible, setIsTabBarVisible] = useState(true);
+  const lastScrollTop = useRef(0);
+
+  const handleFeedScroll = (e: React.UIEvent<HTMLElement>) => {
+    if (tab !== "home") return;
+    const current = e.currentTarget.scrollTop;
+    const diff = current - lastScrollTop.current;
+
+    // At or near top, always keep tab bar visible
+    if (current <= 15) {
+      setIsTabBarVisible(true);
+    } else if (diff > 8) {
+      // User slides/scrolls downward -> tab bar slides below and stays hidden
+      setIsTabBarVisible(false);
+    } else if (diff < -8) {
+      // User slides/scrolls up -> tab bar reappears sliding up
+      setIsTabBarVisible(true);
+    }
+    lastScrollTop.current = current;
+  };
+
+  useEffect(() => {
+    setIsTabBarVisible(true);
+  }, [tab, filter]);
 
   function openAssistant(seed = "") {
     setAssistantSeed(seed.trim());
@@ -221,7 +245,12 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
                 {/* Loading Skeleton State */}
                 {loading && (
-                  <div className="sdp-feed-cards-stack" role="status" aria-busy="true">
+                  <div
+                    className="sdp-feed-cards-stack"
+                    role="status"
+                    aria-busy="true"
+                    onScroll={handleFeedScroll}
+                  >
                     {[1, 2, 3].map((n) => (
                       <div key={n} className="sdp-home-card skeleton-card">
                         <div className="sk-row">
@@ -267,7 +296,10 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
                 {/* Feed Cards List (Exact match to screenshot) */}
                 {!loading && !error && filteredFeed.length > 0 && (
-                  <main className="sdp-feed-cards-stack">
+                  <main
+                    className="sdp-feed-cards-stack"
+                    onScroll={handleFeedScroll}
+                  >
                     {filteredFeed.map((item) => (
                       <ListingCard
                         key={item.id}
@@ -430,10 +462,20 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
           )}
 
           {/* Bottom Frosted Blur Shield (Keeps content under tab bar blurred and impossible to see through) */}
-          <div className="sdp-bottom-blur-scrim" aria-hidden="true" />
+          <div
+            className={`sdp-bottom-blur-scrim ${
+              !isTabBarVisible ? "is-hidden" : ""
+            }`}
+            aria-hidden="true"
+          />
 
           {/* FLOATING CURVED BOTTOM TAB BAR (Exact Match to Claude Design) */}
-          <nav className="sdp-bottom-nav-bar" aria-label="Mobile navigation">
+          <nav
+            className={`sdp-bottom-nav-bar ${
+              !isTabBarVisible ? "is-hidden" : ""
+            }`}
+            aria-label="Mobile navigation"
+          >
             {/* 1. Home */}
             <button
               className={`sdp-nav-item ${tab === "home" ? "active" : ""}`}

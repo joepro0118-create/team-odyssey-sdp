@@ -113,6 +113,16 @@ export type TaskChatResponse = {
   isLocked: boolean;
 };
 
+export type OperatorDashboardSummary = {
+  openListings: number;
+  acceptedListings: number;
+  completedListings: number;
+  totalPointsAwarded: number;
+  totalRedemptions: number;
+  demo: true;
+};
+
+
 export const typeLabels: Record<ListingType, string> = {
   request: "Needs a hand",
   offer: "Offering help",
