@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -9,10 +9,25 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#c8102e",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "Tolong — Sime Darby Property Community Marketplace",
   description:
     "A verified, township-only marketplace where residents help each other.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Tolong",
+  },
+  applicationName: "Tolong",
 };
 
 export default function RootLayout({
