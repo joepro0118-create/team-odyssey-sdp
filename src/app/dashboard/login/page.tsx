@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { setStaffSession } from "@/lib/staff-session";
+import { getStaffSession, setStaffSession } from "@/lib/staff-session";
 
 export default function StaffLoginPage() {
   const router = useRouter();
   const [staffId, setStaffId] = useState("STAFF-DEMO");
   const [password, setPassword] = useState("demo1234");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    if (getStaffSession()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const canLogin = staffId.trim().length > 0 && password.length > 0;
 
@@ -18,7 +25,7 @@ export default function StaffLoginPage() {
     if (!canLogin) return;
     // Prototype log in only: accept any non-empty staff ID and password.
     // Never store or check real passwords.
-    setStaffSession(staffId);
+    setStaffSession(staffId, rememberMe);
     router.push("/dashboard");
   }
 
@@ -341,6 +348,36 @@ export default function StaffLoginPage() {
             </div>
           </div>
 
+          <label
+            htmlFor="sremember"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              minHeight: "32px",
+              fontSize: "14px",
+              fontWeight: 700,
+              color: "#3B3235",
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+          >
+            <input
+              id="sremember"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              style={{
+                width: "20px",
+                height: "20px",
+                margin: 0,
+                accentColor: "#C8102E",
+                cursor: "pointer",
+              }}
+            />
+            <span>Remember me on this device</span>
+          </label>
+
           {canLogin ? (
             <button
               type="submit"
@@ -407,7 +444,7 @@ export default function StaffLoginPage() {
           >
             <span style={{ color: "#6B6063" }}>Not staff?</span>
             <Link
-              href="/"
+              href="/login"
               style={{ color: "#C8102E", textDecoration: "underline" }}
             >
               Open the resident app

@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { LoaderCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import {
+  createClient,
+  getRememberedEmail,
+  isRememberMeEnabled,
+  setRememberMePreference,
+} from "@/lib/supabase/client";
 
 function GoogleMark() {
   return (
@@ -50,6 +55,8 @@ export function LoginForm({
   const [busy, setBusy] = useState<"email" | "google" | "signout" | "reset" | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<Mode>("signin");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [defaultEmail, setDefaultEmail] = useState("");
   const [notice, setNotice] = useState(
     recoveryMissing
       ? "That reset link has expired. Request a new one."
@@ -58,10 +65,16 @@ export function LoginForm({
   const [invalid, setInvalid] = useState(false);
   const unavailable = !enabled || busy !== null;
 
+  useEffect(() => {
+    setRememberMe(isRememberMeEnabled());
+    setDefaultEmail(getRememberedEmail());
+  }, []);
+
   async function signInWithGoogle() {
     if (unavailable || !googleEnabled) return;
     setBusy("google");
     setError("");
+    setRememberMePreference(rememberMe);
     try {
       const { data, error: authError } =
         await createClient().auth.signInWithOAuth({
@@ -89,13 +102,13 @@ export function LoginForm({
     event.preventDefault();
     if (unavailable) return;
     const values = new FormData(event.currentTarget);
+    const email = String(values.get("email") || "").trim();
     setBusy("email");
     setError("");
     setNotice("");
     setInvalid(false);
     try {
       if (mode === "forgot") {
-        const email = String(values.get("email") || "").trim();
         const { error: resetError } =
           await createClient().auth.resetPasswordForEmail(email, {
             redirectTo: new URL("/auth/reset", window.location.origin).toString(),
@@ -112,9 +125,10 @@ export function LoginForm({
         setBusy(null);
         return;
       }
+      setRememberMePreference(rememberMe, email);
       if (mode === "signup") {
         const { data, error: signupError } = await createClient().auth.signUp({
-          email: String(values.get("email") || "").trim(),
+          email,
           password: String(values.get("password") || ""),
           options: {
             data: {
@@ -141,7 +155,7 @@ export function LoginForm({
       }
       const { error: authError } = await createClient().auth.signInWithPassword(
         {
-          email: String(values.get("email") || "").trim(),
+          email,
           password: String(values.get("password") || ""),
         },
       );
@@ -358,6 +372,7 @@ export function LoginForm({
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
+                defaultValue={defaultEmail}
                 required
                 maxLength={254}
                 aria-invalid={invalid}
@@ -388,6 +403,18 @@ export function LoginForm({
                   </button>
                 </span>
               </div>
+            )}
+            {mode !== "forgot" && (
+              <label className="login-remember" htmlFor="login-remember">
+                <input
+                  id="login-remember"
+                  name="remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                />
+                <span>Remember me on this device</span>
+              </label>
             )}
             <button className="login-submit" type="submit">
               {submitLabel}
