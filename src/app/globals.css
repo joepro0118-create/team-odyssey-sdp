@@ -574,6 +574,22 @@ button {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
+/* My activity: give stacked cards breathing room instead of touching */
+.sdp-activity-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sdp-section-heading {
+  margin: 4px 4px 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #C8102E;
+}
+
 .sdp-card-top {
   display: flex;
   align-items: center;
