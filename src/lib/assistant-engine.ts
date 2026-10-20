@@ -137,10 +137,10 @@ export function parseLocalIntent(
       language: lang,
       reply:
         lang === "ms"
-          ? "Pengesahan kod QR memastikan keselamatan kedua-dua pihak. Apabila tugasan selesai secara bersemuka, pembantu akan menjana kod QR (sah selama 15 minit). Pemohon hanya perlu mengimbas kod tersebut untuk melengkapkan tugas dan memberi 50 mata ganjaran serta merta!"
+          ? "Pengesahan kod QR memastikan keselamatan kedua-dua pihak. Apabila tugasan selesai secara bersemuka, pemohon akan memaparkan kod QR (sah selama 15 minit). Pembantu hanya perlu mengimbas kod tersebut untuk melengkapkan tugas dan menerima 50 mata ganjaran serta merta!"
           : lang === "zh"
           ? "二维码交接保障双方安全。当互助当面完成时，协助者展示 15 分钟单次有效二维码，求助者使用手机扫描即确认完成，50 积分立刻发放！"
-          : "The QR code confirms in-person task completion safely. When meeting up, the helper shows a single-use 15-minute QR code. The requester scans it with their phone to confirm completion, instantly awarding 50 points to the helper!",
+          : "The QR code confirms in-person task completion safely. When meeting up, the requester shows a single-use 15-minute QR code. The helper scans it with their phone to confirm completion, instantly earning 50 points!",
     };
   }
 

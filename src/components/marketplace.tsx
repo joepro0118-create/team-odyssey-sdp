@@ -125,7 +125,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
             setTab("activity");
             void refresh();
             setSelectedId(newListing.id);
-            setSelectedQrMode("scan");
+            setSelectedQrMode("show");
           }}
         />
       )}
@@ -348,7 +348,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             }
                           }
                           setSelectedId(req.id);
-                          setSelectedQrMode("scan");
+                          setSelectedQrMode("show");
                         }}
                       >
                         <div className="sdp-card-top">
@@ -369,7 +369,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             ? "Handover completed"
                             : req.status === "open"
                               ? `${req.area} · Waiting for a neighbour to accept`
-                              : "Neighbour connected · Handover pending"}
+                              : "Neighbour connected · Show QR at handover"}
                         </p>
                         {req.status !== "completed" && (
                           <div className="flex gap-2 mt-3">
@@ -379,13 +379,13 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                                 e.stopPropagation();
                                 setSelectedId(req.id);
                                 setSelectedQrMode(
-                                  req.status === "open" ? null : "scan",
+                                  req.status === "open" ? null : "show",
                                 );
                               }}
                             >
                               {req.status === "open"
                                 ? "View listing"
-                                : "Scan helper’s QR"}
+                                : "Show handover QR"}
                             </button>
                           </div>
                         )}
@@ -409,7 +409,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                         onClick={() => {
                           setSelectedId(task.id);
                           setSelectedQrMode(
-                            task.status === "completed" ? null : "show",
+                            task.status === "completed" ? null : "scan",
                           );
                         }}
                       >
@@ -434,10 +434,10 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedId(task.id);
-                                setSelectedQrMode("show");
+                                setSelectedQrMode("scan");
                               }}
                             >
-                              Show QR
+                              Scan requester’s QR
                             </button>
                           </div>
                         )}

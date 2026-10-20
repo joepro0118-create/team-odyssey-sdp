@@ -222,7 +222,7 @@ export function ListingDetail({
                 </div>
                 <div className="step-col">
                   <span className="step-num">2</span>
-                  <span className="step-txt">Meet and scan the QR</span>
+                  <span className="step-txt">Meet & scan requester’s QR</span>
                 </div>
                 <div className="step-col">
                   <span className="step-num">3</span>
@@ -266,21 +266,21 @@ export function ListingDetail({
               <div className="accepted-btns-row">
                 {listing.viewerRole === "requester" && (
                   <button
-                    className="sdp-btn-gradient flex-1"
+                    className="sdp-btn-yellow flex-1"
                     onClick={() => setShowProgress(true)}
                   >
                     <QrCode size={16} />
-                    Scan helper’s QR
+                    Show handover QR
                   </button>
                 )}
 
                 {listing.viewerRole === "helper" && (
                   <button
-                    className="sdp-btn-yellow flex-1"
+                    className="sdp-btn-gradient flex-1"
                     onClick={() => setShowProgress(true)}
                   >
                     <QrCode size={16} />
-                    Show QR
+                    Scan requester’s QR
                   </button>
                 )}
 

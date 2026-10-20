@@ -20,7 +20,7 @@ begin
   from public.task_assignments a
   join public.listings l on l.id = a.listing_id
   where a.id = p_assignment_id
-    and a.helper_id = current_user_id
+    and l.creator_id = current_user_id
     and l.status in ('accepted', 'awaiting_confirmation')
   for update of a, l;
 
@@ -78,8 +78,8 @@ begin
   for update of c, a, l;
 
   if not found then raise exception 'QR token is invalid, expired, or already used'; end if;
-  if confirmation_record.creator_id <> current_user_id then
-    raise exception 'Only the requester can confirm this task';
+  if confirmation_record.helper_id <> current_user_id then
+    raise exception 'Only the assigned helper can confirm this task';
   end if;
 
   awarded_points := confirmation_record.points_reward;

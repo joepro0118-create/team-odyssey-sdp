@@ -275,7 +275,7 @@ export function QrScanner({ onScan }: { onScan: (token: string) => void }) {
                 <div className="phone-hud-bottom-bar">
                   <div className="phone-guidance-pill">
                     <ScanLine size={13} className="text-[#ffc72c]" />
-                    <span>Point at helper’s QR code</span>
+                    <span>Point at requester’s QR code</span>
                   </div>
                 </div>
               </>

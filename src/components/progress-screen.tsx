@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Check,
   Clock,
+  Copy,
   Keyboard,
   Lock,
   MessageSquare,
@@ -34,6 +35,7 @@ export function ProgressScreen({
     null,
   );
   const [qrToken, setQrToken] = useState("");
+  const [copied, setCopied] = useState(false);
   const [completed, setCompleted] = useState(listing.status === "completed");
   const [chatOpen, setChatOpen] = useState(false);
   const [pointsAwarded, setPointsAwarded] = useState(
@@ -45,7 +47,7 @@ export function ProgressScreen({
   const isRequester = listing.viewerRole === "requester";
   const partnerName =
     listing.contact?.name ||
-    (listing.isOwner ? "Ben (fictional resident B)" : "Neighbour");
+    (listing.isOwner ? "Matched neighbour" : "Neighbour");
 
   const createQr = useCallback(async () => {
     if (!listing.assignmentId) {
@@ -54,6 +56,7 @@ export function ProgressScreen({
     }
     setBusy(true);
     setError("");
+    setCopied(false);
     try {
       const res = await api<ConfirmationResult>(
         `/api/tasks/${listing.assignmentId}/confirmation`,
@@ -68,10 +71,11 @@ export function ProgressScreen({
     }
   }, [listing.assignmentId]);
 
+  // Requester automatically generates the handover QR code
   useEffect(() => {
-    if (!isHelper || listing.status === "completed") return;
+    if (!isRequester || listing.status === "completed") return;
     void createQr();
-  }, [createQr, isHelper, listing.status]);
+  }, [createQr, isRequester, listing.status]);
 
   const completeTask = useCallback(
     async (tokenToUse?: string) => {
@@ -103,6 +107,17 @@ export function ProgressScreen({
     },
     [completeTask],
   );
+
+  async function handleCopyToken() {
+    if (!confirmation?.qrToken) return;
+    try {
+      await navigator.clipboard.writeText(confirmation.qrToken);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Ignore clipboard errors
+    }
+  }
 
   // Handover Confirmed screen (Screen 06 in design)
   if (completed) {
@@ -215,7 +230,9 @@ export function ProgressScreen({
           <div className="sdp-band-titles">
             <span className="sdp-band-subtitle">{listing.title}</span>
             <h1 className="sdp-band-title">
-              {partnerName} is on it
+              {isRequester
+                ? `${partnerName} is on it`
+                : `Helping ${partnerName}`}
             </h1>
           </div>
         </div>
@@ -238,7 +255,7 @@ export function ProgressScreen({
         {error && <div className="sdp-error-banner">{error}</div>}
 
         <div className="sdp-qr-main-card">
-          {isHelper ? (
+          {isRequester ? (
             <div className="qr-helper-box">
               {confirmation?.qrToken ? (
                 <div className="generated-qr">
@@ -268,19 +285,32 @@ export function ProgressScreen({
               )}
 
               <p className="qr-instruction">
-                Show this code to the neighbour who posted the request. They
-                scan it to confirm the handover.
+                Show this QR code to the neighbour helping you. They scan it to
+                confirm the handover and earn their points.
               </p>
 
-              <button
-                className="sdp-btn-secondary full-width text-xs font-semibold"
-                disabled={busy}
-                onClick={() => void createQr()}
-              >
-                {busy ? "Refreshing..." : "Refresh QR Code"}
-              </button>
+              <div className="flex gap-2 w-full">
+                <button
+                  type="button"
+                  className="sdp-btn-secondary flex-1 text-xs font-semibold"
+                  disabled={busy}
+                  onClick={() => void createQr()}
+                >
+                  {busy ? "Refreshing..." : "Refresh QR Code"}
+                </button>
+                {confirmation?.qrToken && (
+                  <button
+                    type="button"
+                    className="sdp-btn-secondary flex-1 text-xs font-semibold flex items-center justify-center gap-1.5"
+                    onClick={() => void handleCopyToken()}
+                  >
+                    <Copy size={13} />
+                    {copied ? "Copied!" : "Copy token"}
+                  </button>
+                )}
+              </div>
             </div>
-          ) : isRequester ? (
+          ) : isHelper ? (
             <div className="qr-requester-box">
               <QrScanner onScan={handleScan} />
 
@@ -304,7 +334,7 @@ export function ProgressScreen({
                     <input
                       value={qrToken}
                       onChange={(e) => setQrToken(e.target.value)}
-                      placeholder="Paste helper's QR token"
+                      placeholder="Paste requester's QR token"
                       className="sdp-text-input"
                     />
                     <button
@@ -320,8 +350,7 @@ export function ProgressScreen({
             </div>
           ) : (
             <p className="qr-instruction">
-              The helper shows the QR code, and the neighbour who posted scans
-              it.
+              The requester shows the QR code, and the helper scans it.
             </p>
           )}
         </div>
