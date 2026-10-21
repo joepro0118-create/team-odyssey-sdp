@@ -35,7 +35,6 @@ export function ProfilePanel({
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
   const [points, setPoints] = useState<number | null>(null);
-  const [easyMode, setEasyMode] = useState(false);
   // "coming soon" toast for stub rows
   const [toast, setToast] = useState("");
 
@@ -166,24 +165,6 @@ export function ProfilePanel({
               <div className="profile-row-sub">What neighbours can see</div>
             </div>
             <ChevronRight size={18} aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            className="profile-row"
-            aria-pressed={easyMode}
-            onClick={() => setEasyMode((v) => !v)}
-          >
-            <div>
-              <div className="profile-row-title">Easy mode</div>
-              <div className="profile-row-sub">Larger text and simpler screens</div>
-            </div>
-            <span
-              className={`profile-switch ${easyMode ? "is-on" : ""}`}
-              aria-hidden="true"
-            >
-              <span />
-            </span>
           </button>
 
           <button
