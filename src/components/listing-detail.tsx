@@ -32,11 +32,13 @@ export function ListingDetail({
   initialQrMode,
   onClose,
   onAccepted,
+  onCompleted,
 }: {
   id: string;
   initialQrMode?: "show" | "scan" | null;
   onClose: () => void;
   onAccepted: () => void;
+  onCompleted?: () => void;
 }) {
   const [listing, setListing] = useState<Detail | null>(null);
   const [error, setError] = useState("");
@@ -67,7 +69,7 @@ export function ListingDetail({
                 if (updated.status !== "open") setShowProgress(true);
               })
               .catch(() => {});
-          } else {
+          } else if (data.status !== "completed") {
             setShowProgress(true);
           }
         }
@@ -105,7 +107,7 @@ export function ListingDetail({
       <ProgressScreen
         listing={listing}
         onBack={() => {
-          if (listing.isOwner) {
+          if (listing.isOwner || listing.status === "completed") {
             onClose();
           } else {
             setShowProgress(false);
@@ -113,8 +115,14 @@ export function ListingDetail({
           }
         }}
         onCompleted={() => {
-          setReload((v) => v + 1);
-          onAccepted();
+          setListing((prev) =>
+            prev ? { ...prev, status: "completed" } : prev,
+          );
+          if (onCompleted) {
+            onCompleted();
+          } else {
+            onAccepted();
+          }
         }}
       />
     );
@@ -254,6 +262,26 @@ export function ListingDetail({
             <p className="text-center text-xs text-stone-500">
               This listing was cancelled.
             </p>
+          ) : listing.status === "completed" ? (
+            <div className="accept-action-box">
+              <div className="accepted-btns-row">
+                <button
+                  className="sdp-btn-secondary flex-1"
+                  onClick={onClose}
+                >
+                  Back
+                </button>
+                {listing.assignmentId && (
+                  <button
+                    className="sdp-btn-dark-pill"
+                    onClick={() => setChatOpen(true)}
+                    aria-label="Chat message"
+                  >
+                    <MessageSquare size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
           ) : isAccepted ? (
             <div className="accepted-actions">
               <div className="accepted-privacy-notice">

@@ -249,7 +249,7 @@ export function RewardsPanel({
                   )}
                 </button>
                 <span className="voucher-sub">
-                  Spent {redeemed.points} demo points · Single use
+                  Spent {redeemed.points} points · Single use
                 </span>
               </div>
 

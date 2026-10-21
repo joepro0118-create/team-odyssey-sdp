@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, X } from "lucide-react";
 import { api } from "@/lib/client-api";
 import type { FeedResponse, Listing, RewardsResponse } from "@/lib/types";
 
@@ -26,15 +26,18 @@ function safeArea(area: string) {
 export function ProfilePanel({
   resident,
   listings,
+  onSelectListing,
   onSignOut,
 }: {
   resident?: FeedResponse["resident"];
   listings?: Listing[];
+  onSelectListing?: (id: string) => void;
   onSignOut: () => Promise<void>;
 }) {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
   const [points, setPoints] = useState<number | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   // "coming soon" toast for stub rows
   const [toast, setToast] = useState("");
 
@@ -67,6 +70,9 @@ export function ProfilePanel({
         (item) => item.isParticipant && !item.isOwner && item.status === "completed",
       ).length
     : null;
+  const historyListings = (listings ?? []).filter(
+    (item) => item.isParticipant && item.status === "completed",
+  );
   const stats = [
     points !== null ? { value: String(points), label: "points" } : null,
     helped !== null ? { value: String(helped), label: "neighbours helped" } : null,
@@ -75,6 +81,71 @@ export function ProfilePanel({
 
   function showComingSoon(feature: string) {
     setToast(`${feature} — coming soon`);
+  }
+
+  if (showHistory) {
+    return (
+      <div
+        className="sdp-feed-view"
+        role="region"
+        aria-label="History"
+      >
+        <header className="sdp-screen-band activity-band">
+          <div className="sdp-band-header">
+            <button
+              type="button"
+              onClick={() => setShowHistory(false)}
+              className="sdp-back-btn"
+              aria-label="Back to profile"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="sdp-band-title">History</h1>
+          </div>
+        </header>
+
+        <main className="sdp-feed-body">
+          <div className="sdp-activity-section">
+            <h2 className="sdp-section-heading">Completed listings</h2>
+            {historyListings.length === 0 ? (
+              <div className="sdp-card text-center py-6 text-stone-500 text-xs">
+                No completed listings in your history yet.
+              </div>
+            ) : (
+              historyListings.map((item) => (
+                <div
+                  key={item.id}
+                  className="sdp-card cursor-pointer"
+                  onClick={() => onSelectListing?.(item.id)}
+                >
+                  <div className="sdp-card-top">
+                    <span
+                      className={`sdp-pill-tag ${
+                        item.isOwner
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-stone-900"
+                      }`}
+                    >
+                      {item.isOwner ? "My request" : "Helped with"} ·{" "}
+                      {item.category}
+                    </span>
+                    <span className="sdp-pill-tag bg-green-100 text-green-800 font-bold">
+                      Completed
+                    </span>
+                  </div>
+                  <h3 className="sdp-card-title mt-2">{item.title}</h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    {item.isOwner
+                      ? `${item.area} · Handover completed`
+                      : `${item.timing} · +${item.pointsReward} pts earned`}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -146,6 +217,15 @@ export function ProfilePanel({
         )}
 
         <div className="profile-settings">
+          <button
+            type="button"
+            className="profile-row"
+            onClick={() => setShowHistory(true)}
+          >
+            <div className="profile-row-title">History</div>
+            <ChevronRight size={18} aria-hidden="true" />
+          </button>
+
           <button
             type="button"
             className="profile-row"

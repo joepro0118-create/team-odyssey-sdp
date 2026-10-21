@@ -94,8 +94,13 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   }, [refresh]);
 
   const listings = feed?.listings ?? [];
-  const myRequests = listings.filter((l) => l.isOwner);
-  const myTasks = listings.filter((l) => l.isParticipant && !l.isOwner);
+  // Completed listings move out of My Activity into Profile -> History
+  const myRequests = listings.filter(
+    (l) => l.isOwner && l.status !== "completed",
+  );
+  const myTasks = listings.filter(
+    (l) => l.isParticipant && !l.isOwner && l.status !== "completed",
+  );
 
   const filteredFeed = listings.filter((item) => {
     // Hide own requests from Home feed — Home feed is exclusively for helping neighbours
@@ -149,6 +154,20 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                 listings: prev.listings.map((l) =>
                   l.id === selectedId
                     ? { ...l, status: "accepted", isParticipant: true }
+                    : l,
+                ),
+              };
+            });
+            void refresh();
+          }}
+          onCompleted={() => {
+            setFeed((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                listings: prev.listings.map((l) =>
+                  l.id === selectedId
+                    ? { ...l, status: "completed", isParticipant: true }
                     : l,
                 ),
               };
@@ -341,7 +360,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                   <h2 className="sdp-section-heading">My requests</h2>
                   {myRequests.length === 0 ? (
                     <div className="sdp-card text-center py-6 text-stone-500 text-xs">
-                      You haven’t posted any requests yet.
+                      You have no active requests right now.
                     </div>
                   ) : (
                     myRequests.map((req) => (
@@ -369,39 +388,31 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             Request · {req.category}
                           </span>
                           <span className="sdp-pill-tag bg-yellow-400 text-stone-900 font-bold">
-                            {req.status === "completed"
-                              ? "Completed"
-                              : req.status === "open"
-                                ? "Open"
-                                : "Accepted"}
+                            {req.status === "open" ? "Open" : "Accepted"}
                           </span>
                         </div>
                         <h3 className="sdp-card-title mt-2">{req.title}</h3>
                         <p className="text-xs text-stone-500 mt-1">
-                          {req.status === "completed"
-                            ? "Handover completed"
-                            : req.status === "open"
-                              ? `${req.area} · Waiting for a neighbour to accept`
-                              : "Neighbour connected · Show QR at handover"}
+                          {req.status === "open"
+                            ? `${req.area} · Waiting for a neighbour to accept`
+                            : "Neighbour connected · Show QR at handover"}
                         </p>
-                        {req.status !== "completed" && (
-                          <div className="flex gap-2 mt-3">
-                            <button
-                              className="sdp-btn-yellow text-xs flex-1 justify-center py-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedId(req.id);
-                                setSelectedQrMode(
-                                  req.status === "open" ? null : "show",
-                                );
-                              }}
-                            >
-                              {req.status === "open"
-                                ? "View listing"
-                                : "Show handover QR"}
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            className="sdp-btn-yellow text-xs flex-1 justify-center py-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(req.id);
+                              setSelectedQrMode(
+                                req.status === "open" ? null : "show",
+                              );
+                            }}
+                          >
+                            {req.status === "open"
+                              ? "View listing"
+                              : "Show handover QR"}
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -412,7 +423,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                   <h2 className="sdp-section-heading">My tasks</h2>
                   {myTasks.length === 0 ? (
                     <div className="sdp-card text-center py-6 text-stone-500 text-xs">
-                      You haven’t accepted any neighbour tasks yet.
+                      You have no active neighbour tasks right now.
                     </div>
                   ) : (
                     myTasks.map((task) => (
@@ -421,9 +432,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                         className="sdp-card cursor-pointer"
                         onClick={() => {
                           setSelectedId(task.id);
-                          setSelectedQrMode(
-                            task.status === "completed" ? null : "scan",
-                          );
+                          setSelectedQrMode("scan");
                         }}
                       >
                         <div className="sdp-card-top">
@@ -431,29 +440,25 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             Helping with · {task.category}
                           </span>
                           <span className="sdp-pill-tag bg-yellow-400 text-stone-900 font-bold">
-                            {task.status === "completed"
-                              ? "Done"
-                              : "In progress"}
+                            In progress
                           </span>
                         </div>
                         <h3 className="sdp-card-title mt-2">{task.title}</h3>
                         <p className="text-xs text-stone-500 mt-1">
                           {task.timing} · +{task.pointsReward} pts
                         </p>
-                        {task.status !== "completed" && (
-                          <div className="flex gap-2 mt-3">
-                            <button
-                              className="sdp-btn-dark-pill text-xs px-4 py-2 flex-1 justify-center"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedId(task.id);
-                                setSelectedQrMode("scan");
-                              }}
-                            >
-                              Scan requester’s QR
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            className="sdp-btn-dark-pill text-xs px-4 py-2 flex-1 justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(task.id);
+                              setSelectedQrMode("scan");
+                            }}
+                          >
+                            Scan requester’s QR
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -470,6 +475,10 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
             <ProfilePanel
               resident={feed?.resident}
               listings={feed ? feed.listings : undefined}
+              onSelectListing={(id) => {
+                setSelectedId(id);
+                setSelectedQrMode(null);
+              }}
               onSignOut={onSignOut}
             />
           )}
