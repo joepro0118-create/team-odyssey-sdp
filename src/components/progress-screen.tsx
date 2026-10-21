@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -79,22 +79,39 @@ export function ProgressScreen({
 
   // Requester's phone can't know when the helper scans, so poll the listing
   // status until it flips to completed, then show the confirmed screen.
+  // Keep the latest callback in a ref so the timer isn't reset on every parent render.
+  const onCompletedRef = useRef(onCompleted);
+  useEffect(() => {
+    onCompletedRef.current = onCompleted;
+  }, [onCompleted]);
+
   useEffect(() => {
     if (!isRequester || completed) return;
-    const timer = window.setInterval(() => {
+    let stopped = false;
+    const check = () => {
       api<{ status: string }>(`/api/listings/${listing.id}`)
         .then((data) => {
-          if (data.status === "completed") {
-            setCompleted(true);
-            onCompleted();
-          }
+          if (stopped || data.status !== "completed") return;
+          setCompleted(true);
+          onCompletedRef.current();
         })
         .catch(() => {
           // Ignore transient errors; the next tick retries
         });
-    }, 3000);
-    return () => window.clearInterval(timer);
-  }, [isRequester, completed, listing.id, onCompleted]);
+    };
+    check();
+    const timer = window.setInterval(check, 2000);
+    // Phones throttle timers in the background, so re-check when the tab returns.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [isRequester, completed, listing.id]);
 
   const completeTask = useCallback(
     async (tokenToUse?: string) => {
