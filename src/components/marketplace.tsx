@@ -100,6 +100,8 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const filteredFeed = listings.filter((item) => {
     // Hide own requests from Home feed — Home feed is exclusively for helping neighbours
     if (item.isOwner) return false;
+    // Hide accepted or completed listings — only open requests/offers appear in the feed
+    if (item.status !== "open") return false;
     if (filter !== "all" && item.type !== filter) return false;
     return true;
   });
@@ -140,6 +142,17 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
             setSelectedQrMode(null);
           }}
           onAccepted={() => {
+            setFeed((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                listings: prev.listings.map((l) =>
+                  l.id === selectedId
+                    ? { ...l, status: "accepted", isParticipant: true }
+                    : l,
+                ),
+              };
+            });
             void refresh();
           }}
         />
