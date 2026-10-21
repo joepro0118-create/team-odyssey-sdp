@@ -77,6 +77,25 @@ export function ProgressScreen({
     void createQr();
   }, [createQr, isRequester, listing.status]);
 
+  // Requester's phone can't know when the helper scans, so poll the listing
+  // status until it flips to completed, then show the confirmed screen.
+  useEffect(() => {
+    if (!isRequester || completed) return;
+    const timer = window.setInterval(() => {
+      api<{ status: string }>(`/api/listings/${listing.id}`)
+        .then((data) => {
+          if (data.status === "completed") {
+            setCompleted(true);
+            onCompleted();
+          }
+        })
+        .catch(() => {
+          // Ignore transient errors; the next tick retries
+        });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [isRequester, completed, listing.id, onCompleted]);
+
   const completeTask = useCallback(
     async (tokenToUse?: string) => {
       const token = (tokenToUse || qrToken).trim();
@@ -194,13 +213,13 @@ export function ProgressScreen({
           <h1 className="confirmed-title">
             {isHelper
               ? `You've earned ${pointsAwarded} points!`
-              : "Handover confirmed!"}
+              : "Handover complete!"}
           </h1>
 
           <p className="confirmed-subtitle">
             {isHelper
               ? "Handover confirmed. Thanks for helping a neighbour. Your points have been added to your balance."
-              : "Handover confirmed. Points were awarded to your helper."}
+              : `${partnerName} scanned your code and earned ${pointsAwarded} points. Thanks for being part of the community!`}
           </p>
 
           <button
