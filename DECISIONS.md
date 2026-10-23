@@ -35,3 +35,7 @@ These are demo placeholders, not claims that the whole team approved branding, d
 - 2026-10-15: Add "Medicine (OTC)" category with guardrails against prescription drug requests per AGENTS.md.
 - 2026-10-16: Open the Tolong Assistant from a Ryt-style prompt bar on Home (typed text becomes the first message) and from a link on the Post form; the floating assistant button is removed.
 - 2026-10-19: Build the staff log in (`/dashboard/login`) and management dashboard (`/dashboard`) matching `DashLogin.dc.html` and `Dashboard.dc.html`, discarding the sidebar "Phone view" button, using a sessionStorage prototype staff session (no passwords stored), and using the `Dashboard.dc.html` demo dataset backed by an optional `/api/operator/summary` endpoint.
+
+## Brand identity & logo integration
+
+- 2026-10-23: Integrated official SimeHelp logo from design asset (`15 · SimeHelp logo-html`) across the platform, including standalone vector assets in `public/` (`icon.svg`, `logo.svg`, `logo-reversed.svg`, `logo-stacked.svg`), dynamic OG/PWA icons (`icon.tsx`, `apple-icon.tsx`, `manifest.ts`), dedicated React component (`SimeHelpLogo`), resident authentication hero, resident feed header, profile badge, and township staff dashboard views.

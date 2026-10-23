@@ -18,16 +18,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Tolong — Sime Darby Property Community Marketplace",
+  title: "SimeHelp — Sime Darby Property Community Marketplace",
   description:
     "A verified, township-only marketplace where residents help each other.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Tolong",
+    title: "SimeHelp",
   },
-  applicationName: "Tolong",
+  applicationName: "SimeHelp",
 };
 
 export default function RootLayout({

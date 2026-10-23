@@ -280,6 +280,22 @@ export function ProfilePanel({
           Your unit number is only shared with the neighbour who accepts your
           request.
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "8px",
+            marginTop: "20px",
+            paddingBottom: "12px",
+          }}
+        >
+          <SimeHelpLogo variant="primary" width={120} height={30} ariaLabel="SimeHelp" />
+          <span style={{ fontSize: "11px", fontWeight: 600, color: "#6B6063" }}>
+            SimeHelp v1.0 · Sime Darby Property Hackathon
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tolong — Sime Darby Property Community Marketplace",
-    short_name: "Tolong",
+    name: "SimeHelp — Sime Darby Property Community Marketplace",
+    short_name: "SimeHelp",
     description: "A verified, township-only marketplace where residents help each other.",
     start_url: "/",
     display: "standalone",

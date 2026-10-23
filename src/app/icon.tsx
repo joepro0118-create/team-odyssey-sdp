@@ -16,16 +16,32 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: 48,
+          borderRadius: 52,
           background:
-            "linear-gradient(135deg, #C8102E 0%, #C8102E 45%, #E8602A 75%, #FFC72C 100%)",
-          color: "#ffffff",
-          fontSize: 110,
-          fontWeight: 900,
-          fontFamily: "sans-serif",
+            "linear-gradient(135deg, #C8102E 0%, #C8102E 55%, #E8602A 100%)",
         }}
       >
-        T
+        <svg
+          width="156"
+          height="156"
+          viewBox="0 0 96 96"
+          style={{ display: "flex" }}
+        >
+          <g transform="translate(48 50) scale(1.14) translate(-48 -48)">
+            <path
+              d="M20 46 L48 22 L76 46"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="7.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="37" cy="52" r="7.5" fill="#ffffff" />
+            <path d="M24 77 a13 13 0 0 1 26 0 z" fill="#ffffff" />
+            <circle cx="59" cy="52" r="7.5" fill="#FFC72C" />
+            <path d="M46 77 a13 13 0 0 1 26 0 z" fill="#FFC72C" />
+          </g>
+        </svg>
       </div>
     ),
     {

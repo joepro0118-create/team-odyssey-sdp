@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SimeHelpLogo } from "@/components/simehelp-logo";
 import { api } from "@/lib/client-api";
 import {
   clearStaffSession,
@@ -450,25 +451,10 @@ export default function ManagementDashboardPage() {
             padding: "0 8px 20px",
           }}
         >
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "14px",
-              background: "#C8102E",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "22px",
-              fontWeight: 800,
-            }}
-          >
-            T
-          </div>
+          <SimeHelpLogo variant="icon" width={42} height={42} ariaLabel="SimeHelp" />
           <div>
-            <div style={{ fontSize: "22px", fontWeight: 800, lineHeight: 1.1 }}>
-              Tolong
+            <div style={{ fontSize: "20px", fontWeight: 800, lineHeight: 1.1 }}>
+              SimeHelp
             </div>
             <div style={{ fontSize: "12px", fontWeight: 500, color: "#6B6063" }}>
               Township staff

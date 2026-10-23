@@ -7,6 +7,7 @@ import {
   type FeedResponse,
   type ListingType,
 } from "@/lib/types";
+import { SimeHelpLogo } from "./simehelp-logo";
 import { CreateListing } from "./create-listing";
 import { ListingDetail } from "./listing-detail";
 import { ListingCard } from "./listing-card";
@@ -238,12 +239,30 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
               <div className="sdp-home-layout">
                 {/* Header Group */}
                 <header className="sdp-header-titles">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <SimeHelpLogo
+                      variant="reversed"
+                      width={130}
+                      height={32}
+                      ariaLabel="SimeHelp"
+                    />
+                    <div
+                      className="sdp-precinct-subtitle"
+                      style={{ margin: 0, fontSize: "13px" }}
+                    >
+                      {feed?.resident.area || "Demo Township · Precinct 3"}
+                    </div>
+                  </div>
                   <h1 className="sdp-h1-title">Help a neighbour</h1>
                   {/* Accessible heading for E2E tests */}
                   <h2 className="sr-only">Around the neighbourhood</h2>
-                  <div className="sdp-precinct-subtitle">
-                    {feed?.resident.area || "Demo Township · Precinct 3"}
-                  </div>
                 </header>
 
                 {/* Ryt-style prompt bar: type a need here, or tap to open the assistant */}

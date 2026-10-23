@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
+import { SimeHelpLogo } from "@/components/simehelp-logo";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { isGoogleSignInEnabled } from "@/lib/supabase/providers";
@@ -36,7 +37,15 @@ export default async function LoginPage({
       <div className="login-band" aria-hidden="true" />
       <main className="login-screen">
         <header className="login-hero">
-          <h1 id="login-title">SimeHelp</h1>
+          <h1 id="login-title" className="login-hero-title">
+            <SimeHelpLogo
+              variant="stacked-reversed"
+              width={184}
+              height={112}
+              ariaLabel="SimeHelp"
+            />
+            <span className="sr-only">SimeHelp</span>
+          </h1>
           <p>Neighbours helping neighbours</p>
         </header>
         <LoginForm

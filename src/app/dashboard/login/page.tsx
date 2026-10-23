@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { SimeHelpLogo } from "@/components/simehelp-logo";
 import { getStaffSession, setStaffSession } from "@/lib/staff-session";
 
 export default function StaffLoginPage() {
@@ -56,32 +57,8 @@ export default function StaffLoginPage() {
           flexDirection: "column",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          <div
-            style={{
-              width: "52px",
-              height: "52px",
-              borderRadius: "16px",
-              background: "#fff",
-              color: "#C8102E",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "26px",
-              fontWeight: 800,
-            }}
-          >
-            T
-          </div>
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: 800,
-              textTransform: "uppercase",
-            }}
-          >
-            Tolong
-          </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <SimeHelpLogo variant="reversed" width={210} height={52} ariaLabel="SimeHelp" />
         </div>
 
         <div style={{ marginTop: "auto" }}>
@@ -107,7 +84,7 @@ export default function StaffLoginPage() {
             }}
           >
             See how neighbours are helping each other, follow up on requests
-            that wait too long, and keep Tolong safe.
+            that wait too long, and keep SimeHelp safe.
           </p>
           <ul
             style={{
