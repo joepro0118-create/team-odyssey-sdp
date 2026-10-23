@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const config = {
   agentRules: false,
+  experimental: {
+    agentUpgrade: "security",
+  },
   async redirects() {
     return [
       {
