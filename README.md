@@ -29,7 +29,7 @@ Existing property apps manage buildings, gates, and billing, but fail to connect
 
 ## Demo
 - **Live link:** [https://team-odyssey-sdp.vercel.app/](https://team-odyssey-sdp.vercel.app/)
-- **Video demo:** https://... *(Recording / pitch link)*
+- **Video demo:** [YouTube Video Demo](https://youtu.be/qdyFbTFYoD0)
 - **Pitch Deck / Slides:** [Canva Presentation](https://canva.link/w35xfb62ii1mc92)
 
 ## Tech Stack
