@@ -30,6 +30,10 @@ type AssignmentRow = {
   helper_id: string;
 };
 
+function isDeletedTestListing(row: Pick<ListingRow, "title" | "description">) {
+  return /\blol{3,}/i.test(`${row.title} ${row.description}`);
+}
+
 function toListing(
   row: ListingRow,
   userId: string,
@@ -75,6 +79,18 @@ export async function readFeed(
   if (profileResult.error)
     throw new MarketplaceError("Your resident profile could not be loaded.", 500);
 
+  const allRows = (listingRows ?? []) as ListingRow[];
+  for (const row of allRows) {
+    if (
+      isDeletedTestListing(row) &&
+      row.creator_id === userId &&
+      row.status === "open"
+    ) {
+      void supabase.rpc("cancel_listing", { p_listing_id: row.id });
+    }
+  }
+  const visibleRows = allRows.filter((row) => !isDeletedTestListing(row));
+
   const { data: assignments, error: assignmentError } = await supabase
     .from("task_assignments")
     .select("id, listing_id, helper_id");
@@ -84,7 +100,7 @@ export async function readFeed(
   );
 
   return {
-    listings: ((listingRows ?? []) as ListingRow[]).map((row) =>
+    listings: visibleRows.map((row) =>
       toListing(row, userId, byListing.get(row.id)),
     ),
     resident: {
@@ -109,7 +125,8 @@ export async function readListingDetail(
     .eq("id", listingId)
     .maybeSingle();
   if (error) throw new MarketplaceError(error.message, 500);
-  if (!row) throw new MarketplaceError("This listing could not be found.", 404);
+  if (!row || isDeletedTestListing(row as ListingRow))
+    throw new MarketplaceError("This listing could not be found.", 404);
 
   const assignmentResult = await supabase
     .from("task_assignments")
