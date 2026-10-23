@@ -1,77 +1,71 @@
-# Tolong · Team Odyssey
+# SimeHelp
 
-Tolong is a mobile-friendly neighbourhood-help prototype for the Sime Darby Property University Hackathon 2026. It connects authenticated fictional residents through a shared Supabase-backed marketplace.
+> A verified township marketplace where neighbours help each other and earn rewards, built so every resident can take part.
 
-The implemented demo loop is:
+## The Problem
+Existing property apps manage buildings, gates, and billing, but fail to connect the people living inside them. Residents often need everyday physical help (with over 4.2 million Malaysians aged 60+ and family members often living far away) and have financial value tied up in rarely used tools (such as power drills with an average lifetime use of just 13 minutes). Despite Malaysians ranking 20th out of 142 globally on the World Giving Index, neighbours have no safe, hyper-local, and verified channel to help one another without exposing personal contact details to online strangers.
 
-1. Sign up or sign in with a fictional demo account.
-2. Browse or post a request, offer, or lending listing.
-3. Accept a listing from a second account.
-4. The helper generates a short-lived QR code at handover.
-5. The requester scans the QR code to complete the task.
-6. The helper receives demo points and can redeem a demo reward.
+*Selected Problem Statement: **Sime Darby Property University Hackathon 2026 — People Track**: "How might we enable every resident to live healthier, safer, more connected and more fulfilling lives?"*
 
-All residents, places, listings, and rewards must remain fictional. Points have no cash value. Tolong connects residents; it does not employ or insure them.
+<p align="center">
+  <img src="./public/problem-overview.png" alt="Problem Overview" width="700" />
+</p>
 
-## Local setup
+## Our Solution
+**SimeHelp** (developed under working name *Tolong*) is a verified, township-only mutual-aid marketplace that turns neighbours into an active support network. Residents can request practical help (e.g. lift to a local clinic, parcel pickup, OTC medicine), offer skills, or lend household items without any cash transactions. Exchanges are securely validated in person at handover through dynamic, short-lived QR codes, awarding helpers demo township points redeemable for Sime Darby Property mall vouchers, parking privileges, or community tree planting. Meanwhile, township managers gain visibility into community well-being through an operator management dashboard.
 
-Use Node.js 22 or 24 LTS and npm.
+<p align="center">
+  <img src="./public/app-preview.png" alt="SimeHelp App Preview" width="340" />
+</p>
 
-1. Copy `.env.example` to `.env.local`.
-2. In Supabase, open **Project Settings → API** and copy the project URL and publishable key into `.env.local`.
-3. Apply the SQL migrations in filename order from `docs/supabase/migrations/`.
-4. Optionally run `docs/supabase/seed.sql` to add fictional rewards and listings.
-5. Install and start the app:
+## Key Features
+- **Hyper-Local & Privacy-First Feed:** Anonymous, block-level listing cards (no public names, contact numbers, or unit addresses exposed). Personal details are only revealed between matched parties after mutual acceptance.
+- **10-Second Task Creation & Templates:** Rapid request, offer, and tool-lending creation with smart presets tailored to township life.
+- **In-Person QR Handover Verification:** Anti-fraud handover mechanism using trusted time-limited QR generation and scanner verification before points are credited.
+- **Private Task Coordination Chat:** Real-time in-app coordination between accepted participants for seamless, contact-safe handovers.
+- **Township Rewards & Fair-Use Points Engine:** Fair points distribution with daily caps, redeemable for fictional township perks, retail vouchers, and sustainability initiatives (e.g. planting a township tree).
+- **Inclusive AI Assistant:** "Tolong Assistant" conversational prompt bar that translates natural language requests (Malay & English) into structured marketplace listings for seniors and non-tech-savvy residents.
+- **Township Operator Dashboard:** Dedicated management view showing real-time resident activity, category breakdowns, and unmet neighbourhood needs.
 
-```sh
-npm ci
-npm run dev
-```
+## Demo
+- **Live link:** [https://team-odyssey-sdp.vercel.app/](https://team-odyssey-sdp.vercel.app/)
+- **Video demo:** https://... *(Recording / pitch link)*
+- **Slides (if any):** https://... *(Pitch deck link)*
 
-Open [http://localhost:3000](http://localhost:3000). For a two-resident test, use two separate browsers or devices and two fictional accounts.
+## Tech Stack
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide React
+- **Backend & Database:** Supabase (PostgreSQL, Row Level Security policies, trusted database functions, secure SSR cookie authentication)
+- **AI & Integrations:** Natural Language Assistant, Web Crypto API QR verification, HTML5 QR scanner (`html5-qrcode` & `qrcode.react`)
+- **Deployment:** Vercel
 
-## Supabase integration
+## How to Run It
+1. Clone the repo
+   ```bash
+   git clone https://github.com/team-odyssey/team-odyssey-sdp.git
+   cd team-odyssey-sdp
+   ```
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+3. Add your environment variables (see `.env.example`)
+   ```bash
+   cp .env.example .env.local
+   ```
+   Configure your Supabase credentials in `.env.local`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-publishable-key
+   ```
+4. Run it
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser. For a two-resident test, open two distinct browser sessions (or an Incognito window) to simulate the requester and helper flows.
 
-- Browser authentication uses only the public project URL and publishable key.
-- Emma's login screen at /login uses the same cookie-backed session as the marketplace; Google is shown as unavailable until enabled in Supabase.
-- Every API request sends the current Supabase access token to a same-origin Next.js route.
-- The route verifies the user with Supabase Auth and performs database operations under that user's RLS context.
-- Trusted database functions perform acceptance, QR confirmation, point awards, and redemptions.
-- No service-role key or secret belongs in the browser or repository.
+## What's Next
+1. **Multi-Channel Inclusion:** Expand the senior inclusion path with voice input and a WhatsApp/SMS conversational bridge for non-smartphone users.
+2. **Township Pilot & App Integration:** Pilot the platform in City of Elmina / Bukit Jelutong with resident association seeding, integrating residency verification with the Sime Darby Property App.
 
-See [authentication integration and remaining setup](docs/AUTH-INTEGRATION.md) for Google setup, testing, and deployment handoff.
-
-The frontend compatibility migration adds `area_label` and `timing` to listings and adds trusted listing-create/cancel functions. It must be applied after the two `20261013...` backend migrations.
-
-## Main endpoints
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/listings` | Authenticated feed and current resident summary |
-| `POST /api/listings` | Create a validated listing |
-| `GET /api/listings/:id` | Listing detail and participant state |
-| `POST /api/listings/:id/accept` | Atomically accept an open listing |
-| `POST /api/tasks/:id/confirmation` | Helper creates a 15-minute QR token |
-| `POST /api/tasks/confirm` | Requester confirms completion and awards points |
-| `GET /api/rewards` | Current balance and active demo rewards |
-| `POST /api/rewards/:id/redeem` | Atomically redeem a demo reward |
-
-## Verification
-
-```sh
-npm test
-npm run typecheck
-npm run build
-```
-
-The local unit suite covers validation, privacy boundaries, listing creation, and acceptance. A complete live test still requires two Supabase demo accounts and two browser/device sessions.
-
-## Important files
-
-- `src/lib/types.ts` — frontend/API contract.
-- `src/lib/server/supabase.ts` — authenticated Supabase server client.
-- `src/lib/server/listings.ts` — database-to-UI mapping.
-- `src/app/api/` — authenticated server endpoints.
-- `docs/supabase/migrations/` — schema, RLS, trusted functions, and compatibility migration.
-- `docs/supabase/tests/phase4_security_audit.sql` — database security checks.
-- `DECISIONS.md` — team and implementation decisions.
+## Hackathon
+Built for **Township of Tomorrow: Sime Darby Property University Hackathon 2026 (People Track)**, October 2026.
