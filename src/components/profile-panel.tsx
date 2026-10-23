@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, X } from "lucide-react";
 import { api } from "@/lib/client-api";
 import type { FeedResponse, Listing, RewardsResponse } from "@/lib/types";
+import { SimeHelpLogo } from "./simehelp-logo";
 
 function profileName(label: string) {
   const trimmed = label.replace(/\s*·\s*demo$/i, "").trim();
