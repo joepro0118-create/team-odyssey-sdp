@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUp, Sparkles, X } from "lucide-react";
+import { ArrowUp, Sparkles, Trash2, X } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
 import {
   type FeedResponse,
@@ -29,6 +29,7 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [selectedQrMode, setSelectedQrMode] = useState<"show" | "scan" | null>(
     null,
   );
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const sequence = useRef(0);
   // Assistant sheet is opened from the Home prompt bar (or the Post form link).
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -93,13 +94,44 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
     };
   }, [refresh]);
 
+  async function handleDeleteListing(id: string) {
+    if (deletingId) return;
+    setDeletingId(id);
+    setError("");
+    try {
+      await api(`/api/listings/${id}/cancel`, {
+        method: "POST",
+        body: "{}",
+      });
+      setFeed((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          listings: prev.listings.map((l) =>
+            l.id === id ? { ...l, status: "cancelled" } : l,
+          ),
+        };
+      });
+      setNotice("Your listing has been deleted.");
+      void refresh();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   const listings = feed?.listings ?? [];
   // Completed listings move out of My Activity into Profile -> History
   const myRequests = listings.filter(
-    (l) => l.isOwner && l.status !== "completed",
+    (l) => l.isOwner && l.status !== "completed" && l.status !== "cancelled",
   );
   const myTasks = listings.filter(
-    (l) => l.isParticipant && !l.isOwner && l.status !== "completed",
+    (l) =>
+      l.isParticipant &&
+      !l.isOwner &&
+      l.status !== "completed" &&
+      l.status !== "cancelled",
   );
 
   const filteredFeed = listings.filter((item) => {
@@ -172,6 +204,22 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                 ),
               };
             });
+            void refresh();
+          }}
+          onDeleted={() => {
+            const deletedId = selectedId;
+            setSelectedId(null);
+            setSelectedQrMode(null);
+            setFeed((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                listings: prev.listings.map((l) =>
+                  l.id === deletedId ? { ...l, status: "cancelled" } : l,
+                ),
+              };
+            });
+            setNotice("Your listing has been deleted.");
             void refresh();
           }}
         />
@@ -355,6 +403,17 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
               </header>
 
               <main className="sdp-feed-body">
+                {notice && (
+                  <div className="sdp-notice-banner mb-3" role="status">
+                    <span>{notice}</span>
+                    <button onClick={() => setNotice("")} aria-label="Dismiss">
+                      <X size={15} />
+                    </button>
+                  </div>
+                )}
+
+                {error && <div className="sdp-error-banner mb-3">{error}</div>}
+
                 {/* Section 1: My Requests */}
                 <div className="sdp-activity-section">
                   <h2 className="sdp-section-heading">My requests</h2>
@@ -411,6 +470,21 @@ export function Marketplace({ onSignOut }: { onSignOut: () => Promise<void> }) {
                             {req.status === "open"
                               ? "View listing"
                               : "Show handover QR"}
+                          </button>
+                          <button
+                            type="button"
+                            className="sdp-btn-secondary text-xs px-3 py-2 text-red-700 border-red-200 flex items-center justify-center gap-1"
+                            disabled={deletingId === req.id}
+                            aria-label={`Delete ${req.title}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDeleteListing(req.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
+                            <span>
+                              {deletingId === req.id ? "Deleting..." : "Delete"}
+                            </span>
                           </button>
                         </div>
                       </div>

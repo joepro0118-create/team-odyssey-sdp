@@ -64,7 +64,9 @@ export function ProfilePanel({
 
   const name = profileName(resident?.label || "Resident");
   const area = safeArea(resident?.area || "");
-  const posts = listings ? listings.filter((item) => item.isOwner).length : null;
+  const posts = listings
+    ? listings.filter((item) => item.isOwner && item.status !== "cancelled").length
+    : null;
   const helped = listings
     ? listings.filter(
         (item) => item.isParticipant && !item.isOwner && item.status === "completed",

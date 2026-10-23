@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { isGoogleSignInEnabled } from "@/lib/supabase/providers";
 import "./login.css";
 
-export const metadata: Metadata = { title: "Sign in · Tolong" };
+export const metadata: Metadata = { title: "Sign in · SimeHelp" };
 export const dynamic = "force-dynamic";
 
 const errors: Record<string, string> = {
@@ -36,13 +36,13 @@ export default async function LoginPage({
       <div className="login-band" aria-hidden="true" />
       <main className="login-screen">
         <header className="login-hero">
-          <h1 id="login-title">Tolong</h1>
+          <h1 id="login-title">SimeHelp</h1>
           <p>Neighbours helping neighbours</p>
         </header>
         <LoginForm
           enabled={Boolean(getSupabaseConfig())}
           googleEnabled={googleEnabled}
-          accountLabel={user ? user.email || "Your Tolong account" : null}
+          accountLabel={user ? user.email || "Your SimeHelp account" : null}
           initialError={errors[errorKey] || ""}
           recoveryReady={recovery && Boolean(user)}
           recoveryMissing={recovery && !user}

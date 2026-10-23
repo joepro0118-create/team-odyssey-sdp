@@ -131,6 +131,10 @@ export function LoginForm({
           email,
           password: String(values.get("password") || ""),
           options: {
+            emailRedirectTo: new URL(
+              "/auth/callback",
+              window.location.origin,
+            ).toString(),
             data: {
               anonymous_label: String(values.get("label") || "").trim(),
               area_label: "Demo Township",
@@ -456,7 +460,7 @@ export function LoginForm({
 
       {mode === "signin" && (
         <div className="login-signup">
-          <p>New to Tolong?</p>
+          <p>New to SimeHelp?</p>
           <button
             className="login-outline"
             type="button"
@@ -474,7 +478,7 @@ export function LoginForm({
       )}
       {mode === "signup" && (
         <p className="login-footnote">
-          Use a fictional first name. Tolong never asks for your real full name.
+          Use a fictional first name. SimeHelp never asks for your real full name.
         </p>
       )}
     </>

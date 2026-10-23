@@ -5,7 +5,7 @@ test("login screen loads without browser errors", async ({ page }) => {
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole("heading", { name: "Tolong" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /SimeHelp|Tolong/i })).toBeVisible();
   await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -44,7 +44,7 @@ test("invalid credentials show a useful error (mocked Auth response)", async ({ 
   await page.getByLabel("Email", { exact: true }).fill("fictional@tolong-demo.test");
   await page.getByLabel("Password", { exact: true }).fill("fictional-test-input");
   await signIn.click();
-  await expect(page.getByRole("region", { name: /tolong/i }).getByRole("alert")).toContainText("don’t match");
+  await expect(page.getByRole("region", { name: /SimeHelp|tolong/i }).getByRole("alert")).toContainText("don’t match");
   await expect(signIn).toBeEnabled();
 });
 

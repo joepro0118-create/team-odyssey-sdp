@@ -10,6 +10,7 @@ import {
   MessageSquare,
   QrCode,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/client-api";
 import type { ListingDetail as Detail, ListingType } from "@/lib/types";
@@ -33,17 +34,20 @@ export function ListingDetail({
   onClose,
   onAccepted,
   onCompleted,
+  onDeleted,
 }: {
   id: string;
   initialQrMode?: "show" | "scan" | null;
   onClose: () => void;
   onAccepted: () => void;
   onCompleted?: () => void;
+  onDeleted?: () => void;
 }) {
   const [listing, setListing] = useState<Detail | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [, setConfirming] = useState(false);
   const [showProgress, setShowProgress] = useState(Boolean(initialQrMode));
   const [chatOpen, setChatOpen] = useState(false);
   const [reload, setReload] = useState(0);
@@ -69,7 +73,7 @@ export function ListingDetail({
                 if (updated.status !== "open") setShowProgress(true);
               })
               .catch(() => {});
-          } else if (data.status !== "completed") {
+          } else if (data.status !== "completed" && data.status !== "cancelled") {
             setShowProgress(true);
           }
         }
@@ -102,7 +106,33 @@ export function ListingDetail({
     }
   }
 
-  if (listing && showProgress && listing.status !== "open") {
+  async function deleteListing() {
+    if (deleting) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await api<Detail>(`/api/listings/${id}/cancel`, {
+        method: "POST",
+        body: "{}",
+      });
+      if (onDeleted) {
+        onDeleted();
+      } else {
+        onClose();
+      }
+    } catch (err) {
+      setError(errorMessage(err));
+      setDeleting(false);
+      throw err;
+    }
+  }
+
+  if (
+    listing &&
+    showProgress &&
+    listing.status !== "open" &&
+    listing.status !== "cancelled"
+  ) {
     return (
       <ProgressScreen
         listing={listing}
@@ -124,11 +154,13 @@ export function ListingDetail({
             onAccepted();
           }
         }}
+        onDelete={listing.isOwner ? deleteListing : undefined}
       />
     );
   }
 
-  const isAccepted = listing && listing.status !== "open";
+  const isAccepted =
+    listing && listing.status !== "open" && listing.status !== "cancelled";
   const pointsText =
     listing?.type === "offer" ? "Free" : `+${listing?.pointsReward || 20} pts`;
   const posterLabel = listing?.contact?.name || "Resident";
@@ -260,7 +292,7 @@ export function ListingDetail({
         <div className="sdp-bottom-sheet pinned-bottom-sheet">
           {listing.status === "cancelled" ? (
             <p className="text-center text-xs text-stone-500">
-              This listing was cancelled.
+              This listing was deleted.
             </p>
           ) : listing.status === "completed" ? (
             <div className="accept-action-box">
@@ -321,6 +353,18 @@ export function ListingDetail({
                 </button>
               </div>
 
+              {listing.isOwner && (
+                <button
+                  type="button"
+                  className="sdp-btn-secondary full-width mt-2 text-red-700 border-red-200 flex items-center justify-center gap-2"
+                  disabled={deleting || busy}
+                  onClick={() => void deleteListing().catch(() => {})}
+                >
+                  <Trash2 size={15} />
+                  {deleting ? "Deleting..." : "Delete listing"}
+                </button>
+              )}
+
               {!listing.isParticipant && (
                 <button
                   className="sdp-btn-gradient full-width mt-2"
@@ -339,12 +383,23 @@ export function ListingDetail({
               <div className="privacy-hint">
                 This is your listing. Waiting for a neighbour to accept.
               </div>
-              <button
-                className="sdp-btn-secondary full-width"
-                onClick={onClose}
-              >
-                Back to activity
-              </button>
+              <div className="flex gap-2 w-full">
+                <button
+                  className="sdp-btn-secondary flex-1"
+                  onClick={onClose}
+                >
+                  Back to activity
+                </button>
+                <button
+                  type="button"
+                  className="sdp-btn-secondary flex-1 text-red-700 border-red-200 flex items-center justify-center gap-1.5"
+                  disabled={deleting || busy}
+                  onClick={() => void deleteListing().catch(() => {})}
+                >
+                  <Trash2 size={15} />
+                  {deleting ? "Deleting..." : "Delete listing"}
+                </button>
+              </div>
             </div>
           ) : (
             <div className="accept-action-box">

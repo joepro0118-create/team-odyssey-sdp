@@ -9,6 +9,7 @@ import {
   Keyboard,
   Lock,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { api, errorMessage } from "@/lib/client-api";
@@ -24,12 +25,15 @@ export function ProgressScreen({
   listing,
   onBack,
   onCompleted,
+  onDelete,
 }: {
   listing: ListingDetail;
   onBack: () => void;
   onCompleted: () => void;
+  onDelete?: () => Promise<void> | void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(
     null,
@@ -152,6 +156,18 @@ export function ProgressScreen({
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       // Ignore clipboard errors
+    }
+  }
+
+  async function handleDelete() {
+    if (!onDelete || deleting) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await onDelete();
+    } catch (err) {
+      setError(errorMessage(err));
+      setDeleting(false);
     }
   }
 
@@ -424,6 +440,18 @@ export function ProgressScreen({
             request.
           </p>
         </div>
+
+        {listing.isOwner && onDelete && (
+          <button
+            type="button"
+            className="sdp-btn-secondary full-width mt-3 text-red-700 border-red-200 flex items-center justify-center gap-2"
+            disabled={deleting || busy}
+            onClick={() => void handleDelete()}
+          >
+            <Trash2 size={15} />
+            {deleting ? "Deleting..." : "Delete listing"}
+          </button>
+        )}
       </div>
 
       {/* Task Coordination Chat Modal / Drawer */}

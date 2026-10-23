@@ -228,6 +228,19 @@ export class DemoMarketplace {
     return this.detail(id, resident);
   }
 
+  cancel(id: string, resident: ResidentId): ListingDetail {
+    const item = this.find(id);
+    if (item.ownerId !== resident)
+      throw new MarketplaceError("You can only delete your own listing.", 403);
+    if (item.status === "completed")
+      throw new MarketplaceError(
+        "Completed listings cannot be deleted.",
+        409,
+      );
+    item.status = "cancelled";
+    return this.detail(id, resident);
+  }
+
   complete(idOrAssignmentId: string): {
     assignmentId: string;
     success: boolean;

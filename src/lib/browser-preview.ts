@@ -216,8 +216,11 @@ export function createBrowserPreview() {
         } else {
           const simAcceptMatch =
             /^\/api\/listings\/([^/]+)\/simulate-accept$/.exec(path);
+          const cancelMatch = /^\/api\/listings\/([^/]+)\/cancel$/.exec(path);
           if (simAcceptMatch && method === "POST") {
             result = store.simulateAccept(simAcceptMatch[1], resident);
+          } else if (cancelMatch && method === "POST") {
+            result = store.cancel(cancelMatch[1], resident);
           } else {
             const match = /^\/api\/listings\/([^/]+)(\/accept)?$/.exec(path);
             if (!match || (match[2] ? method !== "POST" : method !== "GET"))

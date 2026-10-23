@@ -102,3 +102,11 @@ test("missing listings return 404 and results cannot mutate stored data", () => 
   listing.title = "Tampered title";
   assert.equal(store.detail(listing.id, "resident-a").title, input.title);
 });
+
+test("owner can delete their listing while non-owners cannot", () => {
+  const store = new DemoMarketplace(false);
+  const listing = store.create(input, "resident-a");
+  assert.throws(() => store.cancel(listing.id, "resident-b"), hasStatus(403));
+  const cancelled = store.cancel(listing.id, "resident-a");
+  assert.equal(cancelled.status, "cancelled");
+});
